@@ -1,3 +1,9 @@
+PATH
+  remote: .
+  specs:
+    polymorpheus (0.1)
+      foreigner
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -107,8 +113,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  foreigner
   mysql2 (= 0.2.6)
+  polymorpheus!
   rails (~> 3.0.0)
   rspec-rails
   ruby-debug-completion
