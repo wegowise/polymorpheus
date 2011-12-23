@@ -70,6 +70,13 @@ describe Shoe do
       let(:attributes) { { man: man } }
       it_should_behave_like "valid polymorphic relationship"
     end
+    context "and the record we are linking to is a new record" do
+      let(:new_man) { Man.new }
+      let(:attributes) { { man: new_man } }
+      specify { shoe.wearer.should == new_man }
+      specify { shoe.wearer_active_key.should be_nil }
+      specify { shoe.wearer_query_condition.should be_nil }
+    end
   end
 
 end

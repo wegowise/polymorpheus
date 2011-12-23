@@ -54,8 +54,13 @@ module Polymorpheus
         # Getter method
         define_method polymorphic_api do
           if key = self.send("#{polymorphic_api}_active_key")
+            # we are connecting to an existing item in the db
             self.send key.gsub(/_id$/,'')
-          end
+          else
+            # we can also link to a new record if we're careful
+            objs = associations.map { |association| self.send(association) }.compact
+            objs.first if objs.length == 1
+           end
         end
 
         # Setter method
