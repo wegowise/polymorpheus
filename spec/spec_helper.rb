@@ -19,7 +19,3 @@ ActiveRecord::Schema.define do
   create_table :women
 end
 
-RSpec.configure do |config|
-  config.after(:all) do
-  end
-end
