@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    polymorpheus (0.1)
+    polymorpheus (0.2)
       foreigner
 
 GEM
