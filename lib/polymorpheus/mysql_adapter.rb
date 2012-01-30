@@ -58,6 +58,10 @@ module Polymorpheus
         end
       end
 
+      def triggers
+        execute("show triggers").collect {|t| Trigger.new(t) }
+      end
+
 
       ##########################################################################
       private

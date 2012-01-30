@@ -4,6 +4,7 @@ require 'sql_logger'
 require 'foreigner'
 require 'foreigner/connection_adapters/mysql2_adapter'
 require 'polymorpheus'
+require 'polymorpheus/trigger'
 
 Polymorpheus::Adapter.load!
 
@@ -94,6 +95,22 @@ describe "Polymorpheus" do
           ALTER TABLE `bicycles` ADD CONSTRAINT `bicycles_really_im_not_doping_i_just_practice_a_lot_fk` FOREIGN KEY (`really_im_not_doping_i_just_practice_a_lot`) REFERENCES `professional`(id)
         })
       end
+    end
+  end
+
+
+  describe "#triggers" do
+    let(:trigger1) { stub(Trigger, :name => '1') }
+    let(:trigger2) { stub(Trigger, :name => '2') }
+
+    before do
+      connection.stub_sql('show triggers', [:trigger1, :trigger2])
+      Trigger.stub(:new).with(:trigger1).and_return(trigger1)
+      Trigger.stub(:new).with(:trigger2).and_return(trigger2)
+    end
+
+    specify do
+      connection.triggers.should == [trigger1, trigger2]
     end
   end
 

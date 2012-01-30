@@ -1,6 +1,7 @@
 module Polymorpheus
   autoload :Adapter, 'polymorpheus/adapter'
   autoload :Interface, 'polymorpheus/interface'
+  autoload :Trigger, 'polymorpheus/trigger'
 
   module ConnectionAdapters
     autoload :SchemaStatements, 'polymorpheus/schema_statements'
