@@ -19,29 +19,30 @@ module Polymorpheus
       # We can specify this in the options as follows:
       #   options:  :unique => 'person_id'
 
-      def add_polymorphic_constraints(table, columns, options = {})
-        poly_drop_triggers(table)
-        poly_create_triggers(table, columns.keys)
+      def add_polymorphic_constraints(table, columns, options={})
+        column_names = columns.keys.sort
+        poly_drop_triggers(table, column_names)
+        poly_create_triggers(table, column_names)
         options.symbolize_keys!
-        index_suffix = options[:index_suffix]
         if options[:unique].present?
-          poly_create_indexes(table, columns.keys, Array(options[:unique]), index_suffix)
+          poly_create_indexes(table, columns.keys, Array(options[:unique]))
         end
-        columns.each do |(col, reference)|
-          ref_table, ref_col = reference.to_s.split('.')
-          add_foreign_key table, ref_table, :column => col, :primary_key => (ref_col || 'id')
+        column_names.each do |col_name|
+          ref_table, ref_col = columns[col_name].to_s.split('.')
+          add_foreign_key table, ref_table,
+                                 :column => col_name,
+                                 :primary_key => (ref_col || 'id')
         end
       end
 
       def remove_polymorphic_constraints(table, columns, options = {})
-        poly_drop_triggers(table)
-        index_suffix = options[:index_suffix]
+        poly_drop_triggers(table, columns.keys.sort)
         columns.each do |(col, reference)|
           ref_table, ref_col = reference.to_s.split('.')
           remove_foreign_key table, ref_table
         end
         if options[:unique].present?
-          poly_remove_indexes(table, columns.keys, Array(options[:unique]), index_suffix)
+          poly_remove_indexes(table, columns.keys, Array(options[:unique]))
         end
       end
 
@@ -49,31 +50,36 @@ module Polymorpheus
       ##########################################################################
       private
 
-      def poly_trigger_name(table, action)
-        "#{table}_unique_polyfk_on_#{action}"
+      def poly_trigger_name(table, action, columns)
+        prefix = "pfk#{action.first}_#{table}_".downcase
+        generate_name prefix, columns.sort
       end
 
-      def poly_drop_trigger(table, action)
-        execute %{DROP TRIGGER IF EXISTS #{poly_trigger_name(table, action)}}
+      def poly_drop_trigger(table, action, columns)
+        trigger_name = poly_trigger_name(table, action, columns)
+        execute %{DROP TRIGGER IF EXISTS #{trigger_name}}
       end
 
       def poly_create_trigger(table, action, columns)
-        sql = "CREATE TRIGGER #{poly_trigger_name(table, action)} BEFORE #{action} ON #{table}\n" +
-              "FOR EACH ROW\n" +
-              "BEGIN\n"
+        trigger_name = poly_trigger_name(table, action, columns)
         colchecks = columns.collect { |col| "IF(NEW.#{col} IS NULL, 0, 1)" }.
                             join(' + ')
-        sql += "IF(#{colchecks}) <> 1 THEN\n" +
-                "SET NEW = 'Error';\n" +
-                "END IF;\n" +
-                "END"
+
+        sql = %{
+          CREATE TRIGGER #{trigger_name} BEFORE #{action} ON #{table}
+            FOR EACH ROW
+            BEGIN
+              IF(#{colchecks}) <> 1 THEN
+                SET NEW = 'Error';
+              END IF;
+            END}
 
         execute sql
       end
 
-      def poly_drop_triggers(table)
-        poly_drop_trigger(table, 'INSERT')
-        poly_drop_trigger(table, 'UPDATE')
+      def poly_drop_triggers(table, columns)
+        poly_drop_trigger(table, 'INSERT', columns)
+        poly_drop_trigger(table, 'UPDATE', columns)
       end
 
       def poly_create_triggers(table, columns)
@@ -81,35 +87,43 @@ module Polymorpheus
         poly_create_trigger(table, 'UPDATE', columns)
       end
 
-      def poly_create_index(table, column, unique_cols, index_suffix)
+      def poly_create_index(table, column, unique_cols)
         unique_cols = unique_cols.collect(&:to_s)
-        name = poly_index_name(table, column, unique_cols, index_suffix)
+        name = poly_index_name(table, column, unique_cols)
         execute %{
           CREATE UNIQUE INDEX #{name} ON #{table} (#{column},#{unique_cols.join(',')})
         }
       end
 
-      def poly_remove_index(table, column, unique_cols, index_suffix)
+      def poly_remove_index(table, column, unique_cols)
         unique_cols = unique_cols.collect(&:to_s)
-        name = poly_index_name(table, column, unique_cols, index_suffix)
+        name = poly_index_name(table, column, unique_cols)
         execute %{ DROP INDEX #{name} ON #{table} }
       end
 
-      def poly_index_name(table, column, unique_cols, index_suffix)
-        index_suffix ||= unique_cols.join('_and_')
-        "index_#{table}_on_#{column}_and_#{index_suffix}"
+      def poly_index_name(table, column, unique_cols)
+        prefix = "pfk_#{table}"
+        generate_name prefix, [column] + unique_cols
       end
 
-      def poly_create_indexes(table, columns, unique_cols, index_suffix)
+      def poly_create_indexes(table, columns, unique_cols)
         columns.each do |column|
-          poly_create_index(table, column, unique_cols, index_suffix)
+          poly_create_index(table, column, unique_cols)
         end
       end
 
-      def poly_remove_indexes(table, columns, unique_cols, index_suffix)
+      def poly_remove_indexes(table, columns, unique_cols)
         columns.each do |column|
-          poly_remove_index(table, column, unique_cols, index_suffix)
+          poly_remove_index(table, column, unique_cols)
         end
+      end
+
+      def generate_name(prefix, columns)
+        # names can be at most 64 characters long
+        length_per_col = (64 - prefix.length) / columns.length
+
+        prefix +
+          columns.map { |c| c.gsub('_','').first(length_per_col - 1) }.join('_')
       end
 
     end

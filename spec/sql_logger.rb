@@ -5,6 +5,10 @@ module Polymorpheus
       @sql_statements ||= []
     end
 
+    def clear_sql_history
+      @sql_statements = nil
+    end
+
     private
 
     def execute(sql, name = nil)
