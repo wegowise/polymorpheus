@@ -8,14 +8,25 @@ require 'polymorpheus'
 Polymorpheus::Adapter.load!
 
 describe "Polymorpheus" do
-  class << ActiveRecord::Base.connection
-    include Polymorpheus::SqlLogger
+
+  before(:all) do
+    class << ActiveRecord::Base.connection
+      include Polymorpheus::SqlLogger
+      alias_method :original_execute, :execute
+      alias_method :execute, :log_sql_statements
+    end
+  end
+
+  after(:all) do
+    class << ActiveRecord::Base.connection
+      alias_method :execute, :original_execute
+    end
   end
 
   let(:connection) { ActiveRecord::Base.connection }
   let(:sql) { connection.sql_statements }
 
-  describe "add_polymorphic_constraints" do
+  describe "#add_polymorphic_constraints" do
 
     subject { connection.add_polymorphic_constraints table, columns }
 
@@ -84,7 +95,6 @@ describe "Polymorpheus" do
         })
       end
     end
-
   end
 
   def clean_sql(sql_string)

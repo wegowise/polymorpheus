@@ -11,7 +11,7 @@ module Polymorpheus
 
     private
 
-    def execute(sql, name = nil)
+    def log_sql_statements(sql, name = nil)
       sql_statements << sql
       sql
     end
