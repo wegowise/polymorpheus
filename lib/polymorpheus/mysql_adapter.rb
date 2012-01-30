@@ -21,15 +21,21 @@ module Polymorpheus
       #           `products` table
       #
       # options:  a hash, corrently only accepts one option that allows us to
-      #           add an additional uniqueness constraint. so if the columns
-      #           hash was specified as above, and we supplied options of
-      #             { :unique => 'picture_url' }
+      #           add an additional uniqueness constraint.
+      #           if the columns hash was specified as above, and we supplied
+      #           options of
+      #             { :unique => true }
       #           then this would create a uniqueness constraint in the database
-      #           that would ensure that no two employees could have the same
-      #           picture_url and no two products could have the same
-      #           picture_url
-      #           (it would allow and employee and a product to have the same
-      #           picture_url)
+      #           that would ensure that any given employee_id could only be in
+      #           the table once, and that any given product_id could only be in
+      #           the table once.
+      #
+      #           alternatively, the user can also supply a column name or array
+      #           of column names to the :unique option:
+      #             { :unique => 'picture_url' }
+      #           This would allow an employee_id (or product_id) to appear
+      #           multiple times in the table, but no two employee ids would
+      #           be able to have the same picture_url.
 
       def add_polymorphic_constraints(table, columns, options={})
         column_names = columns.keys.sort
@@ -116,22 +122,30 @@ module Polymorpheus
       end
 
       def poly_create_index(table, column, unique_cols)
-        unique_cols = unique_cols.collect(&:to_s)
-        name = poly_index_name(table, column, unique_cols)
+        if unique_cols == [true]
+          unique_cols = [column]
+        else
+          unique_cols = [column] + unique_cols
+        end
+        name = poly_index_name(table, unique_cols)
         execute %{
-          CREATE UNIQUE INDEX #{name} ON #{table} (#{column},#{unique_cols.join(',')})
+          CREATE UNIQUE INDEX #{name} ON #{table} (#{unique_cols.join(', ')})
         }
       end
 
       def poly_remove_index(table, column, unique_cols)
-        unique_cols = unique_cols.collect(&:to_s)
-        name = poly_index_name(table, column, unique_cols)
+        if unique_cols == [true]
+          unique_cols = [column]
+        else
+          unique_cols = [column] + unique_cols
+        end
+        name = poly_index_name(table, unique_cols)
         execute %{ DROP INDEX #{name} ON #{table} }
       end
 
-      def poly_index_name(table, column, unique_cols)
-        prefix = "pfk_#{table}"
-        generate_name prefix, [column] + unique_cols
+      def poly_index_name(table, columns)
+        prefix = "pfk_#{table}_"
+        generate_name prefix, columns
       end
 
       def poly_create_indexes(table, columns, unique_cols)
@@ -148,10 +162,10 @@ module Polymorpheus
 
       def generate_name(prefix, columns)
         # names can be at most 64 characters long
-        length_per_col = (64 - prefix.length) / columns.length
+        col_length = (64 - prefix.length) / columns.length
 
         prefix +
-          columns.map { |c| c.gsub('_','').first(length_per_col - 1) }.join('_')
+          columns.map { |c| c.to_s.gsub('_','').first(col_length-1) }.join('_')
       end
 
     end

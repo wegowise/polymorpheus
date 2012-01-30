@@ -34,10 +34,10 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
 
   shared_examples_for "migration statements" do
     describe "#add_polymorphic_constraints" do
-      before { connection.add_polymorphic_constraints(table, columns) }
+      before { connection.add_polymorphic_constraints(table, columns, options) }
 
       specify do
-        clean_sql(sql.join("\n")).should == clean_sql(trigger_sql + fkey_sql)
+        clean_sql(sql.join("\n")).should == clean_sql(full_constraints_sql)
       end
     end
 
@@ -53,6 +53,7 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
   context "when the table and column names are not too long" do
     let(:table) { 'pets' }
     let(:columns) { { 'kitty_id' => 'cats.name', 'dog_id' => 'dogs.id' } }
+    let(:options) { {} }
 
     let(:trigger_sql) do
       %{
@@ -82,7 +83,67 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
       }
     end
 
+    let(:full_constraints_sql) { trigger_sql + fkey_sql }
+
     it_behaves_like "migration statements"
+
+    context "and we specify a uniqueness constraint as true" do
+      let(:options) { { :unique => true } }
+      let(:unique_key_sql) do
+        %{
+          CREATE UNIQUE INDEX pfk_pets_dogid ON pets (dog_id)
+          CREATE UNIQUE INDEX pfk_pets_kittyid ON pets (kitty_id)
+        }
+      end
+
+      let(:full_constraints_sql) { trigger_sql + unique_key_sql + fkey_sql }
+
+      it_behaves_like "migration statements"
+    end
+
+    context "and we specify a uniqueness constraint as a string" do
+      let(:options) { { :unique => 'field1' } }
+      let(:unique_key_sql) do
+        %{
+          CREATE UNIQUE INDEX pfk_pets_dogid_field1 ON pets (dog_id, field1)
+          CREATE UNIQUE INDEX pfk_pets_kittyid_field1 ON pets (kitty_id, field1)
+        }
+      end
+
+      let(:full_constraints_sql) { trigger_sql + unique_key_sql + fkey_sql }
+
+      it_behaves_like "migration statements"
+    end
+
+    context "and we specify a uniqueness constraint as an array" do
+      let(:options) { { :unique => [:foo, :bar] } }
+      let(:unique_key_sql) do
+        %{
+          CREATE UNIQUE INDEX pfk_pets_dogid_foo_bar ON pets (dog_id, foo, bar)
+          CREATE UNIQUE INDEX pfk_pets_kittyid_foo_bar ON pets (kitty_id, foo, bar)
+        }
+      end
+
+      let(:full_constraints_sql) { trigger_sql + unique_key_sql + fkey_sql }
+
+      it_behaves_like "migration statements"
+    end
+
+    context "and we specify a uniqueness constraint on fields with really long names" do
+      let(:options) do
+        { :unique => [:fee_was_a_buddhist_prodigy, :ground_control_to_major_tom] }
+      end
+      let(:unique_key_sql) do
+        %{
+          CREATE UNIQUE INDEX pfk_pets_dogid_feewasabuddhistpr_groundcontroltoma ON pets (dog_id, fee_was_a_buddhist_prodigy, ground_control_to_major_tom)
+          CREATE UNIQUE INDEX pfk_pets_kittyid_feewasabuddhistpr_groundcontroltoma ON pets (kitty_id, fee_was_a_buddhist_prodigy, ground_control_to_major_tom)
+        }
+      end
+
+      let(:full_constraints_sql) { trigger_sql + unique_key_sql + fkey_sql }
+
+      it_behaves_like "migration statements"
+    end
   end
 
   context "when the table and column names combined are very long" do
@@ -91,6 +152,7 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
        { 'im_too_cool_to_vote_and_ill_only_ride_a_fixie' => 'hipster.id',
          'really_im_not_doping_i_just_practice_a_lot' => 'professional.id' }
     end
+    let(:options) { {} }
 
     let(:trigger_sql) do
       %{
@@ -119,6 +181,14 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
         ALTER TABLE `bicycles` ADD CONSTRAINT `bicycles_really_im_not_doping_i_just_practice_a_lot_fk` FOREIGN KEY (`really_im_not_doping_i_just_practice_a_lot`) REFERENCES `professional`(id)
       }
     end
+
+    let(:unique_key_sql) do
+      %{
+        CREATE UNIQUE INDEX pfk_blah
+      }
+    end
+
+    let(:full_constraints_sql) { trigger_sql + fkey_sql }
 
     it_behaves_like "migration statements"
   end
