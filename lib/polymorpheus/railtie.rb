@@ -11,6 +11,10 @@ module Polymorpheus
           include Polymorpheus::ConnectionAdapters::SchemaStatements
         end
 
+        ActiveRecord::SchemaDumper.class_eval do
+          include Polymorpheus::SchemaDumper
+        end
+
         Polymorpheus::Adapter.load!
       end
     end

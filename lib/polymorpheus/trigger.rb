@@ -20,4 +20,10 @@ class Trigger
     end
   end
 
+  def schema_statement
+    # note that we don't need to worry about unique indices or foreign keys
+    # because separate schema statements will be generated for them
+    "add_polymorphic_triggers(#{table}, #{columns})"
+  end
+
 end

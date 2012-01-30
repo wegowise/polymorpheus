@@ -33,11 +33,10 @@ module Polymorpheus
 
       def add_polymorphic_constraints(table, columns, options={})
         column_names = columns.keys.sort
-        poly_drop_triggers(table, column_names)
-        poly_create_triggers(table, column_names)
+        add_polymorphic_triggers(table, column_names)
         options.symbolize_keys!
         if options[:unique].present?
-          poly_create_indexes(table, columns.keys, Array(options[:unique]))
+          poly_create_indexes(table, column_names, Array(options[:unique]))
         end
         column_names.each do |col_name|
           ref_table, ref_col = columns[col_name].to_s.split('.')
@@ -60,6 +59,19 @@ module Polymorpheus
 
       def triggers
         execute("show triggers").collect {|t| Trigger.new(t) }
+      end
+
+      #
+      # DO NOT USE THIS METHOD DIRECTLY
+      #
+      # it will not create the foreign key relationships you want. the only
+      # reason it is here is because it is used by the schema dumper, since
+      # the schema dump will contains separate statements for foreign keys,
+      # and we don't want to duplicate those
+      def add_polymorphic_triggers(table, column_names)
+        column_names.sort!
+        poly_drop_triggers(table, column_names)
+        poly_create_triggers(table, column_names)
       end
 
 
