@@ -5,19 +5,31 @@ module Polymorpheus
       INSERT = 'INSERT'
       UPDATE = 'UPDATE'
 
-      # Suppose I have a table named "pets" with columns dog_id and kitty_id, and I want them to
-      # have a polymorphic database constraint such that dog_id references the "id" column of the
-      # dogs table, and kitty_id references the "name" column of the "cats" table. then my inputs
-      # to this method would be:
-      #   table:    'pets'
-      #   columns:  { 'dog_id' => 'dogs.id', 'kitty_id' => 'cats.name' }
+      # See the README for explanations regarding the use of these methods
       #
-      # UNIQUENESS CONSTRAINTS:
+      # table:    a string equal to the name of the db table
       #
-      # Suppose the pets table also has a 'person_id' column, and we want to impose a uniqueness
-      # constraint such that a given cat or dog can only be associated with the person one time
-      # We can specify this in the options as follows:
-      #   options:  :unique => 'person_id'
+      # columns:  a hash, with keys equal to the column names in the table we
+      #           are operating on, and values indicating the foreign key
+      #           association through the form "table.column". so,
+      #             { 'employee_id' => 'employees.ssn',
+      #               'product_id' => 'products.id' }
+      #           indicates that the `employee_id` column in `table` should have
+      #           a foreign key constraint connecting it to the `ssn` column
+      #           in the `employees` table, and the `product_id` column should
+      #           have a foreign key constraint with the `id` column in the
+      #           `products` table
+      #
+      # options:  a hash, corrently only accepts one option that allows us to
+      #           add an additional uniqueness constraint. so if the columns
+      #           hash was specified as above, and we supplied options of
+      #             { :unique => 'picture_url' }
+      #           then this would create a uniqueness constraint in the database
+      #           that would ensure that no two employees could have the same
+      #           picture_url and no two products could have the same
+      #           picture_url
+      #           (it would allow and employee and a product to have the same
+      #           picture_url)
 
       def add_polymorphic_constraints(table, columns, options={})
         column_names = columns.keys.sort
