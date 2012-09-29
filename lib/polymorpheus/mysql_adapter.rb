@@ -55,8 +55,7 @@ module Polymorpheus
       def remove_polymorphic_constraints(table, columns, options = {})
         poly_drop_triggers(table, columns.keys.sort)
         columns.each do |(col, reference)|
-          ref_table, ref_col = reference.to_s.split('.')
-          remove_foreign_key table, ref_table
+          remove_foreign_key table, :column => col
         end
         if options[:unique].present?
           poly_remove_indexes(table, columns.keys, Array(options[:unique]))
