@@ -1,4 +1,4 @@
-shared_examples_for "migration statements to add constraints and triggers" do
+shared_examples_for "mysql2 migration statements" do
   describe "#add_polymorphic_constraints" do
     before { connection.add_polymorphic_constraints(table, columns, options) }
 
@@ -12,6 +12,14 @@ shared_examples_for "migration statements to add constraints and triggers" do
 
     specify do
       clean_sql(sql.join("\n")).should == clean_sql(trigger_sql)
+    end
+  end
+
+  describe "#remove_polymorphic_constraints" do
+    before { connection.remove_polymorphic_constraints(table, columns, options) }
+
+    specify do
+      clean_sql(sql.join("\n")).should == clean_sql(remove_constraints_sql)
     end
   end
 end
@@ -47,6 +55,16 @@ shared_context "columns with short names" do
   end
   let(:unique_key_sql) { '' }
   let(:full_constraints_sql) { trigger_sql + unique_key_sql + fkey_sql }
+  let(:remove_indices_sql) { '' }
+  let(:remove_constraints_sql) do
+    %{
+      DROP TRIGGER IF EXISTS pfki_pets_dogid_kittyid
+      DROP TRIGGER IF EXISTS pfku_pets_dogid_kittyid
+      ALTER TABLE `pets` DROP FOREIGN KEY `pets_kitty_id_fk`
+      ALTER TABLE `pets` DROP FOREIGN KEY `pets_dog_id_fk`
+    } +
+    remove_indices_sql
+  end
 end
 
 shared_context "columns with long names" do
@@ -86,4 +104,12 @@ shared_context "columns with long names" do
   end
 
   let(:full_constraints_sql) { trigger_sql + fkey_sql }
+  let(:remove_constraints_sql) do
+    %{
+      DROP TRIGGER IF EXISTS pfki_bicycles_imtoocooltovoteandillonl_reallyimnotdopingijustpr
+      DROP TRIGGER IF EXISTS pfku_bicycles_imtoocooltovoteandillonl_reallyimnotdopingijustpr
+      ALTER TABLE `bicycles` DROP FOREIGN KEY `bicycles_im_too_cool_to_vote_and_ill_only_ride_a_fixie_fk`
+      ALTER TABLE `bicycles` DROP FOREIGN KEY `bicycles_really_im_not_doping_i_just_practice_a_lot_fk`
+    }
+  end
 end

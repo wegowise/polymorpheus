@@ -33,7 +33,8 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
   let(:sql) { connection.sql_statements }
 
   def clean_sql(sql_string)
-    sql_string.gsub(/^\n\s*/,'').gsub(/\s*\n\s*$/,'').gsub(/\n\s*/,"\n")
+    sql_string.gsub(/^\n\s*/,'').gsub(/\s*\n\s*$/,'')
+      .gsub(/\n\s*/,"\n").gsub(/\s*$/,"")
   end
 
   before do
@@ -50,7 +51,7 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
       include_context "columns with short names"
       let(:options) { {} }
 
-      it_behaves_like "migration statements to add constraints and triggers"
+      it_behaves_like "mysql2 migration statements"
     end
 
     context "when uniqueness constraint is specified as true" do
@@ -58,10 +59,14 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
       let(:options) { { :unique => true } }
       let(:unique_key_sql) do
         %{ CREATE UNIQUE INDEX pfk_pets_dogid ON pets (dog_id)
-           CREATE UNIQUE INDEX pfk_pets_kittyid ON pets (kitty_id)}
+           CREATE UNIQUE INDEX pfk_pets_kittyid ON pets (kitty_id) }
+      end
+      let(:remove_indices_sql) do
+        %{ DROP INDEX pfk_pets_kittyid ON pets
+           DROP INDEX pfk_pets_dogid ON pets }
       end
 
-      it_behaves_like "migration statements to add constraints and triggers"
+      it_behaves_like "mysql2 migration statements"
     end
 
     context "specifying uniqueness constraint as a string" do
@@ -69,10 +74,14 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
       let(:options) { { :unique => 'field1' } }
       let(:unique_key_sql) do
         %{ CREATE UNIQUE INDEX pfk_pets_dogid_field1 ON pets (dog_id, field1)
-           CREATE UNIQUE INDEX pfk_pets_kittyid_field1 ON pets (kitty_id, field1)}
+           CREATE UNIQUE INDEX pfk_pets_kittyid_field1 ON pets (kitty_id, field1) }
+      end
+      let(:remove_indices_sql) do
+        %{ DROP INDEX pfk_pets_kittyid_field1 ON pets
+           DROP INDEX pfk_pets_dogid_field1 ON pets }
       end
 
-      it_behaves_like "migration statements to add constraints and triggers"
+      it_behaves_like "mysql2 migration statements"
     end
 
     context "specifying uniqueness constraint as an array" do
@@ -80,16 +89,20 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
       let(:options) { { :unique => [:foo, :bar] } }
       let(:unique_key_sql) do
         %{ CREATE UNIQUE INDEX pfk_pets_dogid_foo_bar ON pets (dog_id, foo, bar)
-           CREATE UNIQUE INDEX pfk_pets_kittyid_foo_bar ON pets (kitty_id, foo, bar)}
+           CREATE UNIQUE INDEX pfk_pets_kittyid_foo_bar ON pets (kitty_id, foo, bar) }
+      end
+      let(:remove_indices_sql) do
+        %{ DROP INDEX pfk_pets_kittyid_foo_bar ON pets
+           DROP INDEX pfk_pets_dogid_foo_bar ON pets }
       end
 
-      it_behaves_like "migration statements to add constraints and triggers"
+      it_behaves_like "mysql2 migration statements"
     end
 
     context "when table and column names combined are very long" do
       include_context "columns with long names"
 
-      it_behaves_like "migration statements to add constraints and triggers"
+      it_behaves_like "mysql2 migration statements"
     end
   end
 
