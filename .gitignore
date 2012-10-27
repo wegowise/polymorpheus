@@ -1,2 +1,4 @@
 .rvmrc
 *.swp
+pkg/*.*
+Gemfile.lock
