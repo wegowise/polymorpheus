@@ -41,6 +41,6 @@ describe Trigger do
   its(:columns) { should == %w{dog_id kitty_id} }
 
   its(:schema_statement) do
-    should == %{add_polymorphic_triggers(:pets, ["dog_id", "kitty_id"])}
+    should == %{  add_polymorphic_triggers(:pets, ["dog_id", "kitty_id"])}
   end
 end
