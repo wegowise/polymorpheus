@@ -34,7 +34,7 @@ describe Polymorpheus::SchemaDumper do
   subject { stream.string }
 
   let(:schema_statement) do
-    %{add_polymorphic_triggers(pets, ["dog_id", "kitty_id"])}
+    %{add_polymorphic_triggers(:pets, ["dog_id", "kitty_id"])}
   end
 
   specify "the schema statement is part of the dump" do
