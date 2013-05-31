@@ -71,7 +71,7 @@ module Polymorpheus
           match = associations & klass_ancestors
 
           if match.blank?
-            raise Polymorpheus::Interface::PolymorphicError, associations
+            raise Polymorpheus::Interface::InvalidTypeError, associations
           elsif match.length > 1
             raise Polymorpheus::Interface::AmbiguousTypeError
           else

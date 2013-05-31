@@ -2,3 +2,4 @@
 *.swp
 pkg/*.*
 Gemfile.lock
+.tddium*

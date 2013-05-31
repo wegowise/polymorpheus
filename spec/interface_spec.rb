@@ -69,7 +69,8 @@ describe Shoe do
     it "throws an error if the assigned object isn't a valid type" do
       dog = Dog.create!
       expect { shoe.wearer = dog }
-        .to raise_error(Polymorpheus::Interface::PolymorphicError, '["man", "woman"]')
+        .to raise_error(Polymorpheus::Interface::InvalidTypeError,
+                        "Invalid type. Must be one of {man, woman}")
     end
 
     it "does not throw an error if the assigned object is a subclass of a valid type" do
@@ -96,7 +97,8 @@ describe Shoe do
       glove = Glove.new({})
       man = Man.create!
       expect { glove.wearer = man }
-        .to raise_error(Polymorpheus::Interface::PolymorphicError, '["gentleman"]')
+        .to raise_error(Polymorpheus::Interface::InvalidTypeError,
+                        "Invalid type. Must be one of {gentleman}")
     end
   end
 
