@@ -15,7 +15,14 @@ ActiveRecord::Schema.define do
     t.integer :man_id
     t.integer :woman_id
   end
-  create_table :men
+  create_table :gloves do |t|
+    t.integer :man_id
+    t.integer :woman_id
+  end
+  create_table :men do |t|
+    t.string :type
+  end
   create_table :women
+  create_table :dogs
 end
 
