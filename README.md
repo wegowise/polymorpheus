@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/wegowise/polymorpheus.png?branch=master)](https://travis-ci.org/wegowise/polymorpheus)
+[![Code Climate](https://codeclimate.com/github/wegowise/polymorpheus.png)](https://codeclimate.com/github/wegowise/polymorpheus)
+
 # Polymorpheus
 **Polymorphic relationships in Rails that keep your database happy with almost no setup**
 
