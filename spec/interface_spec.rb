@@ -128,7 +128,7 @@ describe "polymorphic interface" do
       shoe.errors[:base].should ==
         ["You must specify exactly one of the following: {man, woman}"]
     end
-end
+  end
 
   context "when there are multiple relationships defined" do
     let(:shoe) { Shoe.new(man_id: man.id, woman_id: woman.id) }
@@ -151,6 +151,7 @@ end
       specify { shoe.wearer.should == man }
       specify { shoe.wearer_active_key.should == 'man_id' }
       specify { shoe.wearer_query_condition.should == { 'man_id' => man.id } }
+      specify { shoe.valid?.should == true }
     end
 
     context "and we have set the associated object directly" do
@@ -159,6 +160,7 @@ end
       specify { shoe.wearer.should == man }
       specify { shoe.wearer_active_key.should == 'man_id' }
       specify { shoe.wearer_query_condition.should == { 'man_id' => man.id } }
+      specify { shoe.valid?.should == true }
     end
 
     context "and the record we are linking to is a new record" do
@@ -168,6 +170,17 @@ end
       specify { shoe.wearer.should == new_man }
       specify { shoe.wearer_active_key.should == nil }
       specify { shoe.wearer_query_condition.should be_nil }
+      specify { shoe.valid?.should == true }
+    end
+
+    context 'and we have set the association via the setter to a new record' do
+      let(:new_man) { Man.new }
+      let(:shoe) { Shoe.new(wearer: new_man) }
+
+      specify { shoe.wearer.should == new_man }
+      specify { shoe.wearer_active_key.should == nil }
+      specify { shoe.wearer_query_condition.should be_nil }
+      specify { shoe.valid?.should == true }
     end
   end
 

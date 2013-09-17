@@ -58,10 +58,10 @@ module Polymorpheus
 
     def set_associated_object(calling_object, object_to_associate)
       association = get_relevant_association_for_object(object_to_associate)
-      calling_object.public_send("#{association.key}=", object_to_associate.id)
+      calling_object.public_send("#{association.name}=", object_to_associate)
 
       (associations - [association]).each do |association|
-        calling_object.public_send("#{association.key}=", nil)
+        calling_object.public_send("#{association.name}=", nil)
       end
     end
 
