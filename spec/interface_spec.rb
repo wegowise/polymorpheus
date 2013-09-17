@@ -41,6 +41,10 @@ describe "polymorphic interface" do
   let(:gentleman) { Gentleman.create! }
   let(:knight) { Knight.create! }
 
+  specify { Shoe::POLYMORPHEUS_ASSOCIATIONS.should == %w[man woman] }
+  specify { Glove::POLYMORPHEUS_ASSOCIATIONS.should == %w[gentleman
+                                                          gentlewoman] }
+
   describe "setter methods for ActiveRecord objects" do
     let(:shoe) { Shoe.new(attributes) }
     let(:attributes) { {} }
