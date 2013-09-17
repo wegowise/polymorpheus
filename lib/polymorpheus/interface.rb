@@ -32,20 +32,9 @@ module Polymorpheus
           belongs_to association.name.to_sym
         end
 
-        # Class constant defining the keys
-        const_set "#{polymorphic_api}_keys".upcase, builder.association_keys
-
-        # Helper methods and constants
-        define_method "#{polymorphic_api}_types" do
-          builder.association_names
-        end
-
-        define_method "#{polymorphic_api}_active_key" do
-          builder.active_association_key(self)
-        end
-
-        define_method "#{polymorphic_api}_query_condition" do
-          builder.query_condition(self)
+        # Exposed interface for introspection
+        define_method 'polymorpheus' do
+          builder.exposed_interface(self)
         end
 
         # Getter method
@@ -57,18 +46,16 @@ module Polymorpheus
         define_method "#{polymorphic_api}=" do |object_to_associate|
           builder.set_associated_object(self, object_to_associate)
         end
-
-        # Private method called as part of validation
-        # Validate that there is exactly one associated object
-        define_method "polymorphic_#{polymorphic_api}_relationship_is_valid" do
-          builder.validate_associations(self)
-        end
-        private "polymorphic_#{polymorphic_api}_relationship_is_valid"
-
       end
 
       def validates_polymorph(polymorphic_api)
-        validate "polymorphic_#{polymorphic_api}_relationship_is_valid"
+        validate Proc.new {
+          unless polymorpheus.active_association
+            association_names = polymorpheus.associations.map(&:name)
+            errors.add(:base, "You must specify exactly one of the following: "\
+                              "{#{association_names.join(', ')}}")
+          end
+        }
       end
 
     end

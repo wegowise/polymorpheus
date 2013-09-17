@@ -41,21 +41,6 @@ describe "polymorphic interface" do
   let(:gentleman) { Gentleman.create! }
   let(:knight) { Knight.create! }
 
-  describe "class level constant" do
-    specify { Shoe::WEARER_KEYS.should == ["man_id", "woman_id"] }
-    specify { Glove::WEARER_KEYS.should == ["gentleman_id", "gentlewoman_id"] }
-  end
-
-  describe "helper methods" do
-    specify { Shoe.new.wearer_types.should == ["man", "woman"] }
-    specify { Glove.new.wearer_types.should == ["gentleman", "gentlewoman"] }
-  end
-
-  it "make the dynamically defined validation method private" do
-    Shoe.private_instance_methods.
-      include?(:polymorphic_wearer_relationship_is_valid).should be_true
-  end
-
   describe "setter methods for ActiveRecord objects" do
     let(:shoe) { Shoe.new(attributes) }
     let(:attributes) { {} }
@@ -116,71 +101,70 @@ describe "polymorphic interface" do
     end
   end
 
-  context "when there is no relationship defined" do
-    let(:shoe) { Shoe.new }
+  describe '.validates_polymorph validation' do
+    specify { Shoe.new(wearer: man).valid?.should == true }
+    specify { Shoe.new(wearer: woman).valid?.should == true }
+    specify { Shoe.new(man_id: man.id).valid?.should == true }
+    specify { Shoe.new(man: man).valid?.should == true }
+    specify { Shoe.new(man: Man.new).valid?.should == true }
 
-    specify { shoe.wearer.should == nil }
-    specify { shoe.wearer_active_key.should == nil }
-    specify { shoe.wearer_query_condition.should == nil }
+    it 'is invalid if no association is specified' do
+      shoe = Shoe.new
+      shoe.valid?.should == false
+      shoe.errors[:base].should ==
+        ["You must specify exactly one of the following: {man, woman}"]
+    end
 
-    it "sets validation errors" do
-      shoe.valid?.should be_false
+    it 'is invalid if multiple associations are specified' do
+      shoe = Shoe.new(man_id: man.id, woman_id: woman.id)
+      shoe.valid?.should == false
       shoe.errors[:base].should ==
         ["You must specify exactly one of the following: {man, woman}"]
     end
   end
 
-  context "when there are multiple relationships defined" do
-    let(:shoe) { Shoe.new(man_id: man.id, woman_id: woman.id) }
+  describe '#polymorpheus exposed interface method' do
+    subject(:interface) { shoe.polymorpheus }
 
-    specify { shoe.wearer.should == nil }
-    specify { shoe.wearer_active_key.should == nil }
-    specify { shoe.wearer_query_condition.should == nil }
+    context 'when there is no relationship defined' do
+      let(:shoe) { Shoe.new }
 
-    it "sets validation errors" do
-      shoe.valid?.should be_false
-      shoe.errors[:base].should ==
-        ["You must specify exactly one of the following: {man, woman}"]
+      its(:associations) { should match_associations(:man, :woman) }
+      its(:active_association) { should == nil }
+      its(:query_condition) { should == nil }
     end
-  end
 
-  context "when there is exactly one relationship defined" do
-    context "and we have specified it via the id value" do
+    context 'when there is are multiple relationships defined' do
+      let(:shoe) { Shoe.new(man_id: man.id, woman_id: woman.id) }
+
+      its(:associations) { should match_associations(:man, :woman) }
+      its(:active_association) { should == nil }
+      its(:query_condition) { should == nil }
+    end
+
+    context 'when there is one relationship defined through the id value' do
       let(:shoe) { Shoe.new(man_id: man.id) }
 
-      specify { shoe.wearer.should == man }
-      specify { shoe.wearer_active_key.should == 'man_id' }
-      specify { shoe.wearer_query_condition.should == { 'man_id' => man.id } }
-      specify { shoe.valid?.should == true }
+      its(:associations) { should match_associations(:man, :woman) }
+      its(:active_association) { be_association(:man) }
+      its(:query_condition) { should == { 'man_id' => man.id } }
     end
 
-    context "and we have set the associated object directly" do
-      let(:shoe) { Shoe.new(man: man) }
+    context 'when there is one relationship defined through the setter' do
+      let(:shoe) { Shoe.new(wearer: man) }
 
-      specify { shoe.wearer.should == man }
-      specify { shoe.wearer_active_key.should == 'man_id' }
-      specify { shoe.wearer_query_condition.should == { 'man_id' => man.id } }
-      specify { shoe.valid?.should == true }
+      its(:associations) { should match_associations(:man, :woman) }
+      its(:active_association) { be_association(:man) }
+      its(:query_condition) { should == { 'man_id' => man.id } }
     end
 
-    context "and the record we are linking to is a new record" do
-      let(:new_man) { Man.new }
-      let(:shoe) { Shoe.new(man: new_man) }
-
-      specify { shoe.wearer.should == new_man }
-      specify { shoe.wearer_active_key.should == nil }
-      specify { shoe.wearer_query_condition.should be_nil }
-      specify { shoe.valid?.should == true }
-    end
-
-    context 'and we have set the association via the setter to a new record' do
+    context 'when there is one association, to a new record' do
       let(:new_man) { Man.new }
       let(:shoe) { Shoe.new(wearer: new_man) }
 
-      specify { shoe.wearer.should == new_man }
-      specify { shoe.wearer_active_key.should == nil }
-      specify { shoe.wearer_query_condition.should be_nil }
-      specify { shoe.valid?.should == true }
+      its(:associations) { should match_associations(:man, :woman) }
+      its(:active_association) { be_association(:man) }
+      its(:query_condition) { should == nil }
     end
   end
 
