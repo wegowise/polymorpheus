@@ -166,7 +166,7 @@ end
       let(:shoe) { Shoe.new(man: new_man) }
 
       specify { shoe.wearer.should == new_man }
-      specify { shoe.wearer_active_key.should be_nil }
+      specify { shoe.wearer_active_key.should == nil }
       specify { shoe.wearer_query_condition.should be_nil }
     end
   end
