@@ -65,19 +65,18 @@ module Polymorpheus
 
         # Setter method
         define_method "#{polymorphic_api}=" do |polymorphic_obj|
+          matches = associations.select do |association|
+            polymorphic_obj.is_a?(association.classify.constantize)
+          end
 
-          klass_ancestors = polymorphic_obj.class
-                            .ancestors.map(&:name).compact.map(&:underscore)
-          match = associations & klass_ancestors
-
-          if match.blank?
+          if matches.blank?
             raise Polymorpheus::Interface::InvalidTypeError, associations
-          elsif match.length > 1
+          elsif matches.length > 1
             raise Polymorpheus::Interface::AmbiguousTypeError
           else
-            accessor = "#{polymorphic_obj.class.base_class.name.underscore}_id="
-            self.send(accessor, polymorphic_obj.id)
-            (associations - match).each do |association_to_reset|
+            match = matches.first
+            self.send("#{match}_id=", polymorphic_obj.id)
+            (associations - [match]).each do |association_to_reset|
               self.send("#{association_to_reset}_id=", nil)
             end
           end
