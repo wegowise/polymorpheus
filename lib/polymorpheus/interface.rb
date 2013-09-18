@@ -60,6 +60,25 @@ module Polymorpheus
         end
       end
 
+      def has_many_as_polymorph(association, options = {})
+        options.symbolize_keys!
+        conditions = options.fetch(:conditions, {})
+        fkey = name.foreign_key
+
+        class_name = options[:class_name] || association.to_s.classify
+
+        options[:conditions] = proc {
+          keys = class_name.constantize
+                  .const_get('POLYMORPHEUS_ASSOCIATIONS')
+                  .map(&:foreign_key)
+          keys.delete(fkey)
+
+          keys.reduce({}) { |hash, key| hash.merge!(key => nil) }
+        }
+
+        has_many association, options
+      end
+
       def validates_polymorph(polymorphic_api)
         validate Proc.new {
           unless polymorpheus.active_association

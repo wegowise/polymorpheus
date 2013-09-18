@@ -14,6 +14,7 @@ ActiveRecord::Schema.define do
   create_table :shoes do |t|
     t.integer :man_id
     t.integer :woman_id
+    t.integer :other_id
   end
   create_table :gloves do |t|
     t.integer :gentleman_id

@@ -11,9 +11,11 @@ class Shoe < ActiveRecord::Base
 end
 
 class Man < ActiveRecord::Base
+  has_many_as_polymorph :shoes
 end
 
 class Woman < ActiveRecord::Base
+  has_many_as_polymorph :shoes, order: 'id DESC'
 end
 
 class Dog < ActiveRecord::Base
@@ -33,6 +35,30 @@ end
 class Gentlewoman < Woman
 end
 
+describe '.belongs_to_polymorphic' do
+  it 'sets conditions on association to ensure we retrieve correct result' do
+    man = Man.create!
+    man.shoes.to_sql.squish
+      .should == %{SELECT `shoes`.* FROM `shoes`
+                   WHERE `shoes`.`man_id` = 1
+                   AND `shoes`.`woman_id` IS NULL}.squish
+  end
+
+  it 'supports existing conditions on the association' do
+    woman = Woman.create!
+    woman.shoes.to_sql.squish
+      .should == %{SELECT `shoes`.* FROM `shoes`
+                   WHERE `shoes`.`woman_id` = 1
+                   AND `shoes`.`man_id` IS NULL
+                   ORDER BY id DESC}.squish
+  end
+
+  it 'returns the correct result when used with new records' do
+    woman = Woman.create!
+    shoe = Shoe.create!(woman: woman, other_id: 10)
+    Man.new.shoes.where(other_id: 10).should == []
+  end
+end
 
 describe "polymorphic interface" do
 
