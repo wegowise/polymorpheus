@@ -1,3 +1,5 @@
+require 'ostruct'
+
 module Polymorpheus
   class InterfaceBuilder
 
@@ -9,6 +11,14 @@ module Polymorpheus
       @associations = association_names.map do |association_name|
         Polymorpheus::InterfaceBuilder::Association.new(association_name)
       end
+    end
+
+    def exposed_interface(calling_object)
+      OpenStruct.new(
+        associations: associations,
+        active_association: active_association(calling_object),
+        query_condition: query_condition(calling_object)
+      )
     end
 
     def association_keys
@@ -62,14 +72,6 @@ module Polymorpheus
 
       (associations - [association]).each do |association|
         calling_object.public_send("#{association.name}=", nil)
-      end
-    end
-
-    def validate_associations(calling_object)
-      unless active_association(calling_object)
-        calling_object.errors
-          .add(:base, "You must specify exactly one of the following: "\
-                      "{#{association_names.join(', ')}}")
       end
     end
 
