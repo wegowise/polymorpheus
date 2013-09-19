@@ -1,9 +1,7 @@
 ActiveRecord::Base.establish_connection({
   adapter: 'mysql2',
-  username: 'root',
-  password: '',
-  host: 'localhost',
-  database: 'polymorphicTest'
+  username: 'travis',
+  database: 'polymorpheus_test'
 })
 
 ActiveRecord::Base.connection.tables.each do |table|
