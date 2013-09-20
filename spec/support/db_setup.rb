@@ -9,18 +9,21 @@ ActiveRecord::Base.connection.tables.each do |table|
 end
 
 ActiveRecord::Schema.define do
-  create_table :shoes do |t|
-    t.integer :man_id
-    t.integer :woman_id
-    t.integer :other_id
+  create_table :heros
+  create_table :villains
+  create_table :superheros
+  create_table :alien_demigods
+  create_table :supervillains
+  create_table :trees
+
+  create_table :story_arcs do |t|
+    t.integer :hero_id
+    t.integer :villain_id
+    t.integer :issue_id
   end
-  create_table :gloves do |t|
-    t.integer :gentleman_id
-    t.integer :gentlewoman_id
+
+  create_table :superpowers do |t|
+    t.integer :superhero_id
+    t.integer :supervillain_id
   end
-  create_table :men do |t|
-    t.string :type
-  end
-  create_table :women
-  create_table :dogs
 end

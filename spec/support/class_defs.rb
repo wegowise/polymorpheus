@@ -1,32 +1,40 @@
 # this is normally done via a Railtie in non-testing situations
 ActiveRecord::Base.send :include, Polymorpheus::Interface
 
-class Shoe < ActiveRecord::Base
-  belongs_to_polymorphic :man, :woman, :as => :wearer
-  validates_polymorph :wearer
+# Han Solo is a hero, but not a superhero
+class Hero < ActiveRecord::Base
+  has_many_as_polymorph :story_arcs
 end
 
-class Man < ActiveRecord::Base
-  has_many_as_polymorph :shoes
+# Hannibal Lecter is a villain, but not a supervillain
+class Villain < ActiveRecord::Base
+  has_many_as_polymorph :story_arcs, order: 'id DESC'
 end
 
-class Woman < ActiveRecord::Base
-  has_many_as_polymorph :shoes, order: 'id DESC'
+# Flash is a superhero but not an alien demigod
+class Superhero < Hero
 end
 
-class Dog < ActiveRecord::Base
+# Superman is an alien demigod
+class AlienDemigod < Superhero
 end
 
-class Glove < ActiveRecord::Base
-  belongs_to_polymorphic :gentleman, :gentlewoman, :as => :wearer
-  validates_polymorph :wearer
+# Darkseid is a supervillain
+class Supervillain < Villain
 end
 
-class Gentleman < Man
+# All heros and villains have story arcs
+class StoryArc < ActiveRecord::Base
+  belongs_to_polymorphic :hero, :villain, as: :character
+  validates_polymorph :character
 end
 
-class Knight < Gentleman
+# But only super-people have superpowers
+class Superpower < ActiveRecord::Base
+  belongs_to_polymorphic :superhero, :supervillain, as: :wielder
 end
 
-class Gentlewoman < Woman
+# Trees, though, are masters of zen. They sway with the wind.
+# (Unless this is LOTR, but let's ignore that for now.)
+class Tree < ActiveRecord::Base
 end
