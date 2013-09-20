@@ -3,33 +3,7 @@ require 'polymorpheus'
 require 'spec_helper'
 require 'support/class_defs'
 
-describe '.has_many_as_polymorph' do
-  it 'sets conditions on association to ensure we retrieve correct result' do
-    hero = Hero.create!
-    hero.story_arcs.to_sql
-      .should match_sql(%{SELECT `story_arcs`.* FROM `story_arcs`
-                          WHERE `story_arcs`.`hero_id` = 1
-                          AND `story_arcs`.`villain_id` IS NULL})
-  end
-
-  it 'supports existing conditions on the association' do
-    villain = Villain.create!
-    villain.story_arcs.to_sql
-      .should match_sql(%{SELECT `story_arcs`.* FROM `story_arcs`
-                          WHERE `story_arcs`.`villain_id` = 1
-                          AND `story_arcs`.`hero_id` IS NULL
-                          ORDER BY id DESC})
-  end
-
-  it 'returns the correct result when used with new records' do
-    villain = Villain.create!
-    story_arc = StoryArc.create!(villain: villain, issue_id: 10)
-    Hero.new.story_arcs.where(issue_id: 10).should == []
-  end
-end
-
-describe "polymorphic interface" do
-
+describe '.belongs_to_polymorph' do
   let(:hero) { Hero.create! }
   let(:villain) { Villain.create! }
   let(:superhero) { Superhero.create! }
@@ -99,28 +73,6 @@ describe "polymorphic interface" do
     end
   end
 
-  describe '.validates_polymorph validation' do
-    specify { StoryArc.new(character: hero).valid?.should == true }
-    specify { StoryArc.new(character: villain).valid?.should == true }
-    specify { StoryArc.new(hero_id: hero.id).valid?.should == true }
-    specify { StoryArc.new(hero: hero).valid?.should == true }
-    specify { StoryArc.new(hero: Hero.new).valid?.should == true }
-
-    it 'is invalid if no association is specified' do
-      story_arc = StoryArc.new
-      story_arc.valid?.should == false
-      story_arc.errors[:base].should ==
-        ["You must specify exactly one of the following: {hero, villain}"]
-    end
-
-    it 'is invalid if multiple associations are specified' do
-      story_arc = StoryArc.new(hero_id: hero.id, villain_id: villain.id)
-      story_arc.valid?.should == false
-      story_arc.errors[:base].should ==
-        ["You must specify exactly one of the following: {hero, villain}"]
-    end
-  end
-
   describe '#polymorpheus exposed interface method' do
     subject(:interface) { story_arc.polymorpheus }
 
@@ -165,5 +117,54 @@ describe "polymorphic interface" do
       its(:query_condition) { should == nil }
     end
   end
+end
 
+describe '.has_many_as_polymorph' do
+  it 'sets conditions on association to ensure we retrieve correct result' do
+    hero = Hero.create!
+    hero.story_arcs.to_sql
+      .should match_sql(%{SELECT `story_arcs`.* FROM `story_arcs`
+                          WHERE `story_arcs`.`hero_id` = #{hero.id}
+                          AND `story_arcs`.`villain_id` IS NULL})
+  end
+
+  it 'supports existing conditions on the association' do
+    villain = Villain.create!
+    villain.story_arcs.to_sql
+      .should match_sql(%{SELECT `story_arcs`.* FROM `story_arcs`
+                          WHERE `story_arcs`.`villain_id` = #{villain.id}
+                          AND `story_arcs`.`hero_id` IS NULL
+                          ORDER BY id DESC})
+  end
+
+  it 'returns the correct result when used with new records' do
+    villain = Villain.create!
+    story_arc = StoryArc.create!(villain: villain, issue_id: 10)
+    Hero.new.story_arcs.where(issue_id: 10).should == []
+  end
+end
+
+describe '.validates_polymorph' do
+  let(:hero) { Hero.create! }
+  let(:villain) { Villain.create! }
+
+  specify { StoryArc.new(character: hero).valid?.should == true }
+  specify { StoryArc.new(character: villain).valid?.should == true }
+  specify { StoryArc.new(hero_id: hero.id).valid?.should == true }
+  specify { StoryArc.new(hero: hero).valid?.should == true }
+  specify { StoryArc.new(hero: Hero.new).valid?.should == true }
+
+  it 'is invalid if no association is specified' do
+    story_arc = StoryArc.new
+    story_arc.valid?.should == false
+    story_arc.errors[:base].should ==
+      ["You must specify exactly one of the following: {hero, villain}"]
+  end
+
+  it 'is invalid if multiple associations are specified' do
+    story_arc = StoryArc.new(hero_id: hero.id, villain_id: villain.id)
+    story_arc.valid?.should == false
+    story_arc.errors[:base].should ==
+      ["You must specify exactly one of the following: {hero, villain}"]
+  end
 end
