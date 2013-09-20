@@ -19,8 +19,11 @@ ActiveRecord::Schema.define do
   create_table :story_arcs do |t|
     t.integer :hero_id
     t.integer :villain_id
+    t.integer :battle_id
     t.integer :issue_id
   end
+
+  create_table :battles
 
   create_table :superpowers do |t|
     t.integer :superhero_id

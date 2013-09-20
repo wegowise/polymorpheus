@@ -4,11 +4,13 @@ ActiveRecord::Base.send :include, Polymorpheus::Interface
 # Han Solo is a hero, but not a superhero
 class Hero < ActiveRecord::Base
   has_many_as_polymorph :story_arcs
+  has_many :battles, through: :story_arcs
 end
 
 # Hannibal Lecter is a villain, but not a supervillain
 class Villain < ActiveRecord::Base
   has_many_as_polymorph :story_arcs, order: 'id DESC'
+  has_many :battles, through: :story_arcs
 end
 
 # Flash is a superhero but not an alien demigod
@@ -26,7 +28,12 @@ end
 # All heros and villains have story arcs
 class StoryArc < ActiveRecord::Base
   belongs_to_polymorphic :hero, :villain, as: :character
+  belongs_to :battle
   validates_polymorph :character
+end
+
+class Battle < ActiveRecord::Base
+  has_many :story_arcs
 end
 
 # But only super-people have superpowers

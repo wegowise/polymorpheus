@@ -142,6 +142,17 @@ describe '.has_many_as_polymorph' do
     story_arc = StoryArc.create!(villain: villain, issue_id: 10)
     Hero.new.story_arcs.where(issue_id: 10).should == []
   end
+
+  it 'sets conditions on associations with enough specificity that they work
+  in conjunction with has_many :through relationships' do
+    hero = Hero.create!
+    hero.battles.to_sql
+      .should match_sql(%{SELECT `battles`.* FROM `battles`
+                          INNER JOIN `story_arcs`
+                          ON `battles`.`id` = `story_arcs`.`battle_id`
+                          WHERE `story_arcs`.`hero_id` = 16
+                          AND `story_arcs`.`villain_id` IS NULL})
+  end
 end
 
 describe '.validates_polymorph' do
