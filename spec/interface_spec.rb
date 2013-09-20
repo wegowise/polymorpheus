@@ -3,7 +3,7 @@ require 'polymorpheus'
 require 'spec_helper'
 require 'support/class_defs'
 
-describe '.belongs_to_polymorphic' do
+describe '.has_many_as_polymorph' do
   it 'sets conditions on association to ensure we retrieve correct result' do
     man = Man.create!
     man.shoes.to_sql.squish
