@@ -6,19 +6,19 @@ require 'support/class_defs'
 describe '.has_many_as_polymorph' do
   it 'sets conditions on association to ensure we retrieve correct result' do
     man = Man.create!
-    man.shoes.to_sql.squish
-      .should == %{SELECT `shoes`.* FROM `shoes`
-                   WHERE `shoes`.`man_id` = 1
-                   AND `shoes`.`woman_id` IS NULL}.squish
+    man.shoes.to_sql
+      .should match_sql(%{SELECT `shoes`.* FROM `shoes`
+                          WHERE `shoes`.`man_id` = 1
+                          AND `shoes`.`woman_id` IS NULL})
   end
 
   it 'supports existing conditions on the association' do
     woman = Woman.create!
-    woman.shoes.to_sql.squish
-      .should == %{SELECT `shoes`.* FROM `shoes`
-                   WHERE `shoes`.`woman_id` = 1
-                   AND `shoes`.`man_id` IS NULL
-                   ORDER BY id DESC}.squish
+    woman.shoes.to_sql
+      .should match_sql(%{SELECT `shoes`.* FROM `shoes`
+                          WHERE `shoes`.`woman_id` = 1
+                          AND `shoes`.`man_id` IS NULL
+                          ORDER BY id DESC})
   end
 
   it 'returns the correct result when used with new records' do

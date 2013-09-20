@@ -13,3 +13,9 @@ RSpec::Matchers.define :match_associations do |*association_names|
     end
   end
 end
+
+RSpec::Matchers.define :match_sql do |desired_sql|
+  match do |actual_sql|
+    desired_sql.gsub(/\s+/, ' ').should == actual_sql.gsub(/\s+/, ' ')
+  end
+end
