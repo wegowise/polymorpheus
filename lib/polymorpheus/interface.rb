@@ -67,14 +67,16 @@ module Polymorpheus
 
         class_name = options[:class_name] || association.to_s.classify
 
-        options[:conditions] = proc {
+        options[:conditions] = proc do
           keys = class_name.constantize
                   .const_get('POLYMORPHEUS_ASSOCIATIONS')
                   .map(&:foreign_key)
           keys.delete(fkey)
 
-          keys.reduce({}) { |hash, key| hash.merge!(key => nil) }
-        }
+          nil_columns = keys.reduce({}) { |hash, key| hash.merge!(key => nil) }
+
+          { association => nil_columns }
+        end
 
         has_many association, options
       end
