@@ -34,6 +34,7 @@ end
 
 class Battle < ActiveRecord::Base
   has_many :story_arcs
+  has_many :heros, through: :story_arcs
 end
 
 # But only super-people have superpowers

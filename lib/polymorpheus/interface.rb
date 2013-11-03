@@ -75,7 +75,12 @@ module Polymorpheus
 
           nil_columns = keys.reduce({}) { |hash, key| hash.merge!(key => nil) }
 
-          { association => nil_columns }
+
+          if self.is_a?(ActiveRecord::Associations::JoinDependency::JoinAssociation)
+            { aliased_table_name => nil_columns }
+          else
+            { association => nil_columns }
+          end
         end
 
         has_many association, options

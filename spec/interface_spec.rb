@@ -153,6 +153,25 @@ describe '.has_many_as_polymorph' do
                           WHERE `story_arcs`.`hero_id` = 16
                           AND `story_arcs`.`villain_id` IS NULL})
   end
+
+  it 'uses the correct association table name when used in conjunction with a
+  join condition' do
+    battle = Battle.create!
+    battle.heros.to_sql
+      .should match_sql(%{SELECT `heros`.* FROM `heros`
+                          INNER JOIN `story_arcs`
+                          ON `heros`.`id` = `story_arcs`.`hero_id`
+                          WHERE `story_arcs`.`battle_id` = #{battle.id}})
+
+    battle.heros.joins(:story_arcs).to_sql
+      .should match_sql(%{SELECT `heros`.* FROM `heros`
+                          INNER JOIN `story_arcs` `story_arcs_heros`
+                          ON `story_arcs_heros`.`hero_id` = `heros`.`id`
+                          AND `story_arcs_heros`.`villain_id` IS NULL
+                          INNER JOIN `story_arcs`
+                          ON `heros`.`id` = `story_arcs`.`hero_id`
+                          WHERE `story_arcs`.`battle_id` = #{battle.id}})
+  end
 end
 
 describe '.validates_polymorph' do
