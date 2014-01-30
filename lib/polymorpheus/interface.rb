@@ -62,7 +62,6 @@ module Polymorpheus
 
       def has_many_as_polymorph(association, options = {})
         options.symbolize_keys!
-        conditions = options.fetch(:conditions, {})
         fkey = name.foreign_key
 
         class_name = options[:class_name] || association.to_s.classify
