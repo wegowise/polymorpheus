@@ -9,7 +9,12 @@ end
 
 # Hannibal Lecter is a villain, but not a supervillain
 class Villain < ActiveRecord::Base
-  has_many_as_polymorph :story_arcs, order: 'id DESC'
+  if ActiveRecord::VERSION::MAJOR >= 4
+    has_many_as_polymorph :story_arcs, -> { order('id DESC') }
+  else
+    has_many_as_polymorph :story_arcs, order: 'id DESC'
+  end
+
   has_many :battles, through: :story_arcs
 end
 
