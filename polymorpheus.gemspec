@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
   s.license = 'MIT'
 
   s.add_dependency('foreigner')
-  s.add_dependency('activerecord', '>=3.0')
-  s.add_development_dependency('rspec-rails')
-  s.add_development_dependency('mysql2')
+  s.add_dependency('activerecord', '>= 3.2', '< 5.0')
+  s.add_development_dependency('rspec-rails', '~> 2.14.0')
+  s.add_development_dependency('mysql2', '~> 0.3')
 end
