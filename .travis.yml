@@ -1,5 +1,9 @@
 language: ruby
 rvm:
   - 1.9.3
+  - 2.0.0
+  - 2.1.0
+env:
+  - AR=3.2.18
 before_script:
   - mysql -e 'create database polymorpheus_test;'
