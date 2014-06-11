@@ -5,6 +5,14 @@ module Polymorpheus
   autoload :Trigger, 'polymorpheus/trigger'
   autoload :SchemaDumper, 'polymorpheus/schema_dumper'
 
+  module Interface
+    if ActiveRecord::VERSION::MAJOR >= 4
+      autoload :HasManyAsPolymorph, 'polymorpheus/interface/rails4/has_many_as_polymorph'
+    else
+      autoload :HasManyAsPolymorph, 'polymorpheus/interface/rails3/has_many_as_polymorph'
+    end
+  end
+
   class InterfaceBuilder
     autoload :Association, 'polymorpheus/interface_builder/association'
   end

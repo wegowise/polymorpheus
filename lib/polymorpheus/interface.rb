@@ -18,6 +18,7 @@ module Polymorpheus
 
     def self.included(base)
       base.extend(ClassMethods)
+      base.extend(HasManyAsPolymorph)
     end
 
     module ClassMethods
@@ -57,48 +58,6 @@ module Polymorpheus
         # Setter method
         define_method "#{polymorphic_api}=" do |object_to_associate|
           builder.set_associated_object(self, object_to_associate)
-        end
-      end
-
-      def has_many_as_polymorph(association, *options)
-        if options.first.instance_of?(Hash)
-          scope = nil
-          options = options.first || {}
-        else
-          scope = options.shift
-          options = options.last || {}
-        end
-
-        options.symbolize_keys!
-        fkey = name.foreign_key
-
-        class_name = options[:class_name] || association.to_s.classify
-
-        conditions = proc do
-          keys = class_name.constantize
-                  .const_get('POLYMORPHEUS_ASSOCIATIONS')
-                  .map(&:foreign_key)
-          keys.delete(fkey)
-
-          nil_columns = keys.reduce({}) { |hash, key| hash.merge!(key => nil) }
-
-          if ActiveRecord::VERSION::MAJOR >= 4
-            relation = where(nil_columns)
-            relation = scope.call.merge(relation) unless scope.nil?
-            relation
-          else
-            if self.is_a?(ActiveRecord::Associations::JoinDependency::JoinAssociation)
-              { aliased_table_name => nil_columns }
-            else
-              { association => nil_columns }
-            end
-          end
-        end
-
-        if ActiveRecord::VERSION::MAJOR >= 4
-          has_many association, conditions, options
-        else
-          has_many association, options.merge(conditions: conditions)
         end
       end
 
