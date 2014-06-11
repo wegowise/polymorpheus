@@ -7,6 +7,7 @@ module Polymorpheus
 
   module Interface
     autoload :BelongsToPolymorphic, 'polymorpheus/interface/belongs_to_polymorphic'
+    autoload :ValidatesPolymorph, 'polymorpheus/interface/validates_polymorph'
 
     if ActiveRecord::VERSION::MAJOR >= 4
       autoload :HasManyAsPolymorph, 'polymorpheus/interface/rails4/has_many_as_polymorph'
