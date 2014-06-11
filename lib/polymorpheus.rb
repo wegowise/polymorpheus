@@ -6,6 +6,8 @@ module Polymorpheus
   autoload :SchemaDumper, 'polymorpheus/schema_dumper'
 
   module Interface
+    autoload :BelongsToPolymorphic, 'polymorpheus/interface/belongs_to_polymorphic'
+
     if ActiveRecord::VERSION::MAJOR >= 4
       autoload :HasManyAsPolymorph, 'polymorpheus/interface/rails4/has_many_as_polymorph'
     else
