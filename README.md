@@ -115,7 +115,7 @@ Now let's review what we've done.
   would use with a `has_many` association (such as `:order`, `:class_name`,
   etc.). Specifically, the `has_many_as_polymorph` declaration in the `Employee`
   class of the example above is equivalant to
-  `has_many :pictures, { picture_id: nil }`
+  `has_many :pictures, { product_id: nil }`
   and the `has_many_as_polymorph` declaration in the `Product` class is
   equivalent to `has_many :pictures, { employee_id: nil }`
 
