@@ -26,5 +26,6 @@ module Polymorpheus
 end
 
 Polymorpheus::Adapter.register 'mysql2', 'polymorpheus/mysql_adapter'
+Polymorpheus::Adapter.register 'postgresql', 'polymorpheus/postgresql_adapter'
 
 require 'polymorpheus/railtie' if defined?(Rails)

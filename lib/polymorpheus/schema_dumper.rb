@@ -9,11 +9,13 @@ module Polymorpheus
     def tables_with_triggers(stream)
       tables_without_triggers(stream)
 
-      @connection.triggers.collect(&:schema_statement).each do |statement|
-        stream.puts statement
+      if @connection.respond_to?(:triggers)
+        @connection.triggers.collect(&:schema_statement).each do |statement|
+          stream.puts statement
+        end
       end
+
       stream.puts
     end
   end
  end
-
