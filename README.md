@@ -64,7 +64,7 @@ end
 ```ruby
 class Picture < ActiveRecord::Base
   belongs_to_polymorphic :employee, :product, :as => :imageable
-  validates_polymorphic :imageable
+  validates_polymorph :imageable
 end
 
 class Employee < ActiveRecord::Base
