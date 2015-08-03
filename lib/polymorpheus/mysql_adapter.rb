@@ -20,8 +20,9 @@ module Polymorpheus
       #           have a foreign key constraint with the `id` column in the
       #           `products` table
       #
-      # options:  a hash, corrently only accepts one option that allows us to
-      #           add an additional uniqueness constraint.
+      # options:  a hash, accepting options that allows us to add an additional
+      #           uniqueness constraint, a on_delete action and a on_update action.
+      #
       #           if the columns hash was specified as above, and we supplied
       #           options of
       #             { :unique => true }
@@ -36,6 +37,10 @@ module Polymorpheus
       #           This would allow an employee_id (or product_id) to appear
       #           multiple times in the table, but no two employee ids would
       #           be able to have the same picture_url.
+      #
+      #           the options of :on_delete and :on_update are directly passed to
+      #           rails's add_foreign_key method, and more info on the accepted
+      #           value and their effects can be found in rails documentation.
 
       def add_polymorphic_constraints(table, columns, options={})
         column_names = columns.keys.sort
@@ -48,7 +53,9 @@ module Polymorpheus
           ref_table, ref_col = columns[col_name].to_s.split('.')
           add_foreign_key table, ref_table,
                                  :column => col_name,
-                                 :primary_key => (ref_col || 'id')
+                                 :primary_key => (ref_col || 'id'),
+                                 :on_delete => options[:on_delete],
+                                 :on_update => options[:on_update]
         end
       end
 
