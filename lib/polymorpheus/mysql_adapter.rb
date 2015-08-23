@@ -20,8 +20,10 @@ module Polymorpheus
       #           have a foreign key constraint with the `id` column in the
       #           `products` table
       #
-      # options:  a hash, corrently only accepts one option that allows us to
-      #           add an additional uniqueness constraint.
+      # options:  a hash, accepting options that allows us to add an additional
+      #           uniqueness constraint, add an on_delete constraint and add an
+      #           on_update constraint.
+      #
       #           if the columns hash was specified as above, and we supplied
       #           options of
       #             { :unique => true }
@@ -36,6 +38,15 @@ module Polymorpheus
       #           This would allow an employee_id (or product_id) to appear
       #           multiple times in the table, but no two employee ids would
       #           be able to have the same picture_url.
+      #
+      #           :on_delete
+      #           Action that happens ON DELETE. Valid values are :nullify, :cascade
+      #           and :restrict
+      #
+      #           :on_update
+      #           Action that happens ON UPDATE. Valid values are :nullify, :cascade
+      #           and :restrict
+
 
       def add_polymorphic_constraints(table, columns, options={})
         column_names = columns.keys.sort
@@ -48,7 +59,8 @@ module Polymorpheus
           ref_table, ref_col = columns[col_name].to_s.split('.')
           add_foreign_key table, ref_table,
                                  :column => col_name,
-                                 :primary_key => (ref_col || 'id')
+                                 :primary_key => (ref_col || 'id'),
+                                 :options => generate_constraints(options)
         end
       end
 
@@ -165,6 +177,25 @@ module Polymorpheus
 
         prefix +
           columns.map { |c| c.to_s.gsub('_','').first(col_length-1) }.join('_')
+      end
+
+      def generate_constraints(options)
+        constraints = []
+
+        ['delete', 'update'].each do |event|
+          next unless options["on_#{event}".to_sym].try(:present?)
+
+          action = case options["on_#{event}".to_sym].to_sym
+            when :nullify then 'SET NULL'
+            when :cascade then 'CASCADE'
+            when :restrict then 'RESTRICT'
+          end
+          next unless action
+
+          constraints << "ON #{event.upcase} #{action}"
+        end
+
+        constraints.join(' ')
       end
 
     end

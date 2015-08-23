@@ -99,6 +99,28 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
       it_behaves_like "mysql2 migration statements"
     end
 
+    context "specifying an on update constraint" do
+      include_context "columns with short names"
+      let(:options) { { :on_update => :cascade } }
+      let(:fkey_sql) do
+        %{ ALTER TABLE `pets` ADD CONSTRAINT `pets_dog_id_fk` FOREIGN KEY (`dog_id`) REFERENCES `dogs`(id) ON UPDATE CASCADE
+           ALTER TABLE `pets` ADD CONSTRAINT `pets_kitty_id_fk` FOREIGN KEY (`kitty_id`) REFERENCES `cats`(name) ON UPDATE CASCADE }
+      end
+
+      it_behaves_like "mysql2 migration statements"
+    end
+
+    context "specifying on delete and on update constraints" do
+      include_context "columns with short names"
+      let(:options) { { :on_update => :cascade, :on_delete => :restrict } }
+      let(:fkey_sql) do
+        %{ ALTER TABLE `pets` ADD CONSTRAINT `pets_dog_id_fk` FOREIGN KEY (`dog_id`) REFERENCES `dogs`(id) ON DELETE RESTRICT ON UPDATE CASCADE
+           ALTER TABLE `pets` ADD CONSTRAINT `pets_kitty_id_fk` FOREIGN KEY (`kitty_id`) REFERENCES `cats`(name) ON DELETE RESTRICT ON UPDATE CASCADE }
+      end
+
+      it_behaves_like "mysql2 migration statements"
+    end
+
     context "when table and column names combined are very long" do
       include_context "columns with long names"
 
