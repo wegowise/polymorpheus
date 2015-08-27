@@ -7,6 +7,5 @@ env:
   - AR=3.2.18
   - AR=4.0.5
   - AR=4.1.1
-  - AR=4.2.4
 before_script:
   - mysql -e 'create database polymorpheus_test;'
