@@ -195,7 +195,8 @@ module Polymorpheus
 
         ['delete', 'update'].each do |event|
           option = "on_#{event}".to_sym
-          next unless options.has_key?(option)
+          next unless options.has_key?(option) &&
+                      options[option].respond_to?(:to_sym)
 
           action = case options[option].to_sym
             when :nullify then 'SET NULL'

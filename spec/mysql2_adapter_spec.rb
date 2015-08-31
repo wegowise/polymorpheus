@@ -121,6 +121,17 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
       it_behaves_like "mysql2 migration statements"
     end
 
+    context "when on_delete and on_update have invalid arguments" do
+      include_context "columns with short names"
+      let(:options) { { :on_update => :invalid, :on_delete => nil } }
+      let(:fkey_sql) do
+        %{ ALTER TABLE `pets` ADD CONSTRAINT `pets_dog_id_fk` FOREIGN KEY (`dog_id`) REFERENCES `dogs`(id)
+           ALTER TABLE `pets` ADD CONSTRAINT `pets_kitty_id_fk` FOREIGN KEY (`kitty_id`) REFERENCES `cats`(name) }
+      end
+
+      it_behaves_like "mysql2 migration statements"
+    end
+
     context "when table and column names combined are very long" do
       include_context "columns with long names"
 
