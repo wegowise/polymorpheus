@@ -5,47 +5,56 @@ module Polymorpheus
       INSERT = 'INSERT'
       UPDATE = 'UPDATE'
 
-      # See the README for explanations regarding the use of these methods
+      # See the README for more information about the use of these methods.
       #
       # table:    a string equal to the name of the db table
       #
       # columns:  a hash, with keys equal to the column names in the table we
       #           are operating on, and values indicating the foreign key
-      #           association through the form "table.column". so,
-      #             { 'employee_id' => 'employees.ssn',
-      #               'product_id' => 'products.id' }
-      #           indicates that the `employee_id` column in `table` should have
-      #           a foreign key constraint connecting it to the `ssn` column
-      #           in the `employees` table, and the `product_id` column should
-      #           have a foreign key constraint with the `id` column in the
-      #           `products` table
+      #           association through the form "table.column".
       #
-      # options:  a hash, accepting options that allows us to add an additional
-      #           uniqueness constraint, add an on_delete constraint and add an
-      #           on_update constraint.
+      #             {
+      #               'employee_id' => 'employees.ssn',
+      #               'product_id' => 'products.id'
+      #             }
       #
-      #           if the columns hash was specified as above, and we supplied
-      #           options of
-      #             { :unique => true }
-      #           then this would create a uniqueness constraint in the database
-      #           that would ensure that any given employee_id could only be in
-      #           the table once, and that any given product_id could only be in
-      #           the table once.
+      #           This indicates that the `employee_id` column in `table`
+      #           should have a foreign key constraint connecting it to the
+      #           `ssn` column in the `employees` table, and the `product_id`
+      #           column should have a foreign key constraint with the `id`
+      #           column in the `products` table.
       #
-      #           alternatively, the user can also supply a column name or array
-      #           of column names to the :unique option:
-      #             { :unique => 'picture_url' }
-      #           This would allow an employee_id (or product_id) to appear
-      #           multiple times in the table, but no two employee ids would
-      #           be able to have the same picture_url.
+      # options:  a hash, accepting the following options
       #
-      #           :on_delete
-      #           Action that happens ON DELETE. Valid values are :nullify, :cascade
-      #           and :restrict
+      #   :unique
       #
-      #           :on_update
-      #           Action that happens ON UPDATE. Valid values are :nullify, :cascade
-      #           and :restrict
+      #       If the columns hash was specified as above, and :unique is true:
+      #
+      #         { :unique => true }
+      #
+      #       Then this creates a uniqueness constraint in the database that
+      #       will ensure that any given employee_id can only be in the table
+      #       once, and that any given product_id can only be in the table
+      #       once.
+      #
+      #       Alternatively, you can supply a column name or array of column
+      #       names to the :unique option:
+      #
+      #       { :unique => 'picture_url' }
+      #
+      #       This will allow an employee_id (or product_id) to appear multiple
+      #       times in the table, but no two employee IDs would be able to have
+      #       the same picture_url.
+      #
+      #    :on_delete
+      #
+      #        Action that happens ON DELETE. Valid values are :nullify,
+      #        :cascade and :restrict.
+      #
+      #    :on_update
+      #
+      #        Action that happens ON UPDATE. Valid values are :nullify,
+      #        :cascade and :restrict.
 
 
       def add_polymorphic_constraints(table, columns, options={})
@@ -210,4 +219,3 @@ end
   rescue
   end
 end
-
