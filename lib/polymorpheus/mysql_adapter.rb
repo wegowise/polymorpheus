@@ -192,9 +192,10 @@ module Polymorpheus
         constraints = []
 
         ['delete', 'update'].each do |event|
-          next unless options["on_#{event}".to_sym].try(:present?)
+          option = "on_#{event}".to_sym
+          next unless options.has_key?(option)
 
-          action = case options["on_#{event}".to_sym].to_sym
+          action = case options[option].to_sym
             when :nullify then 'SET NULL'
             when :cascade then 'CASCADE'
             when :restrict then 'RESTRICT'
