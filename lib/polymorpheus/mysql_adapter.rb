@@ -66,19 +66,22 @@ module Polymorpheus
         if options[:unique].present?
           poly_create_indexes(table, column_names, Array(options[:unique]))
         end
+
         column_names.each do |col_name|
           ref_table, ref_col = columns[col_name].to_s.split('.')
-          add_foreign_key table, ref_table,
-                                 :column => col_name,
-                                 :primary_key => (ref_col || 'id'),
-                                 :options => generate_constraints(options)
+          fk_options = {
+            :column => col_name,
+            :name => "#{table}_#{col_name}_fk",
+            :primary_key => (ref_col || 'id' )
+          }.merge(generate_constraints(options))
+          add_foreign_key(table, ref_table, fk_options)
         end
       end
 
       def remove_polymorphic_constraints(table, columns, options = {})
         poly_drop_triggers(table, columns.keys.sort)
         columns.each do |(col, reference)|
-          remove_foreign_key table, :column => col
+          remove_foreign_key table, :column => col, :name => "#{table}_#{col}_fk"
         end
         if options[:unique].present?
           poly_remove_indexes(table, columns.keys, Array(options[:unique]))
@@ -191,26 +194,8 @@ module Polymorpheus
       end
 
       def generate_constraints(options)
-        constraints = []
-
-        ['delete', 'update'].each do |event|
-          option = "on_#{event}".to_sym
-          next unless options.has_key?(option) &&
-                      options[option].respond_to?(:to_sym)
-
-          action = case options[option].to_sym
-            when :nullify then 'SET NULL'
-            when :cascade then 'CASCADE'
-            when :restrict then 'RESTRICT'
-          end
-          next unless action
-
-          constraints << "ON #{event.upcase} #{action}"
-        end
-
-        constraints.join(' ')
+        options.slice(:on_delete, :on_update)
       end
-
     end
   end
 end
@@ -222,4 +207,9 @@ end
     end
   rescue
   end
+end
+
+if ::Polymorpheus.require_foreigner?
+  require 'foreigner/connection_adapters/mysql2_adapter'
+  require 'polymorpheus/mysql_adapter/foreigner_constraints'
 end

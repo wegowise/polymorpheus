@@ -1,4 +1,4 @@
-shared_examples_for "mysql2 migration statements" do
+shared_examples_for 'mysql2 add sql for polymorphic constraints' do
   describe "#add_polymorphic_constraints" do
     before { connection.add_polymorphic_constraints(table, columns, options) }
 
@@ -6,7 +6,9 @@ shared_examples_for "mysql2 migration statements" do
       clean_sql(sql.join("\n")).should == clean_sql(full_constraints_sql)
     end
   end
+end
 
+shared_examples_for 'mysql2 add sql for polymorphic triggers' do
   describe "#add_polymorphic_triggers" do
     before { connection.add_polymorphic_triggers(table, columns.keys) }
 
@@ -14,7 +16,9 @@ shared_examples_for "mysql2 migration statements" do
       clean_sql(sql.join("\n")).should == clean_sql(trigger_sql)
     end
   end
+end
 
+shared_examples_for 'mysql2 remove sql for polymorphic constraints' do
   describe "#remove_polymorphic_constraints" do
     before { connection.remove_polymorphic_constraints(table, columns, options) }
 
@@ -22,6 +26,12 @@ shared_examples_for "mysql2 migration statements" do
       clean_sql(sql.join("\n")).should == clean_sql(remove_constraints_sql)
     end
   end
+end
+
+shared_examples_for "mysql2 migration statements" do
+  it_behaves_like 'mysql2 add sql for polymorphic constraints'
+  it_behaves_like 'mysql2 add sql for polymorphic triggers'
+  it_behaves_like 'mysql2 remove sql for polymorphic constraints'
 end
 
 shared_context "columns with short names" do

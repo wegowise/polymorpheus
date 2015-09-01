@@ -3,7 +3,6 @@
 source "https://rubygems.org"
 
 gem "appraisal"
-gem "activerecord", "~> 4.0.5"
-gem "foreigner", "~> 1.7.4"
+gem "activerecord", "~> 4.2.0"
 
 gemspec :path => "../"

@@ -8,5 +8,6 @@ gemfile:
   - gemfiles/3.0.gemfile
   - gemfiles/4.0.gemfile
   - gemfiles/4.1.gemfile
+  - gemfiles/4.2.gemfile
 before_script:
   - mysql -e 'create database polymorpheus_test;'

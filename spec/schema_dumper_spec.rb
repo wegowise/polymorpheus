@@ -1,8 +1,6 @@
 require 'active_record'
 require 'spec_helper'
 require 'sql_logger'
-require 'foreigner'
-require 'foreigner/connection_adapters/mysql2_adapter'
 require 'polymorpheus'
 require 'polymorpheus/trigger'
 require 'stringio'

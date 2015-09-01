@@ -1,8 +1,6 @@
 require 'active_record'
 require 'spec_helper'
 require 'sql_logger'
-require 'foreigner'
-require 'foreigner/connection_adapters/mysql2_adapter'
 require 'polymorpheus'
 require 'polymorpheus/trigger'
 require 'shared_examples'
@@ -35,6 +33,12 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
   def clean_sql(sql_string)
     sql_string.gsub(/^\n\s*/,'').gsub(/\s*\n\s*$/,'')
       .gsub(/\n\s*/,"\n").gsub(/\s*$/,"")
+      .gsub('`', '')
+      .gsub(/\ FOREIGN KEY/, "\nFOREIGN KEY")
+      .gsub(/\ REFERENCES/, "\nREFERENCES")
+      .gsub(/\ ON DELETE/, "\nON DELETE")
+      .gsub(/\ ON UPDATE/, "\nON UPDATE")
+      .gsub(/([[:alpha:]])\(/, '\1 (')
   end
 
   before do
@@ -129,7 +133,14 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
            ALTER TABLE `pets` ADD CONSTRAINT `pets_kitty_id_fk` FOREIGN KEY (`kitty_id`) REFERENCES `cats`(name) }
       end
 
-      it_behaves_like "mysql2 migration statements"
+      it "#add_polymorphic_constraints raises an argument error" do
+        expect do
+          connection.add_polymorphic_constraints(table, columns, options)
+        end.to raise_error ArgumentError
+      end
+
+      it_behaves_like 'mysql2 add sql for polymorphic triggers'
+      it_behaves_like 'mysql2 remove sql for polymorphic constraints'
     end
 
     context "when table and column names combined are very long" do

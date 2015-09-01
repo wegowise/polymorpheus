@@ -23,7 +23,14 @@ module Polymorpheus
   module ConnectionAdapters
     autoload :SchemaStatements, 'polymorpheus/schema_statements'
   end
+
+  def self.require_foreigner?
+    !(::ActiveRecord::VERSION::MAJOR >= 4 &&
+      ::ActiveRecord::VERSION::MINOR >= 2)
+  end
 end
+
+require 'foreigner' if ::Polymorpheus.require_foreigner?
 
 Polymorpheus::Adapter.register 'mysql2', 'polymorpheus/mysql_adapter'
 Polymorpheus::Adapter.register 'postgresql', 'polymorpheus/postgresql_adapter'

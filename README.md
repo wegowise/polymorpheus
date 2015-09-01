@@ -5,6 +5,23 @@
 **Polymorphic relationships in Rails that keep your database happy with almost
 no setup**
 
+### Installation
+
+If you are using Bundler, you can add the gem to your Gemfile:
+
+```ruby
+# with Rails >= 4.2
+gem 'polymorpheus'
+```
+
+Or:
+
+```ruby
+# with Rails < 4.2
+gem 'foreigner'
+gem 'polymorpheus'
+```
+
 ### Background
 * **What is polymorphism?** [Rails Guides has a great overview of what
   polymorphic relationships are and how Rails handles them](
@@ -196,7 +213,7 @@ pic.polymorpheus.query_condition
 
 * This gem was written by [Barun Singh](https://github.com/barunio)
 * It uses the [Foreigner gem](https://github.com/matthuhiggins/foreigner) under
-  the hood for a few things
+  the hood for Rails < 4.2.
 
 polymorpheus is Copyright © 2011-2015 Barun Singh and [WegoWise](
 http://wegowise.com). It is free software, and may be redistributed under the
