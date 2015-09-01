@@ -4,9 +4,9 @@ rvm:
   - 2.0.0
   - 2.1.2
   - 2.2.2
-env:
-  - AR=3.2.18
-  - AR=4.0.5
-  - AR=4.1.1
+gemfile:
+  - gemfiles/3.0.gemfile
+  - gemfiles/4.0.gemfile
+  - gemfiles/4.1.gemfile
 before_script:
   - mysql -e 'create database polymorpheus_test;'
