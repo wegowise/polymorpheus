@@ -19,6 +19,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency('foreigner')
   s.add_dependency('activerecord', '>= 3.2', '< 4.2')
+
+  s.add_development_dependency('rake', '~> 10.4.2')
   s.add_development_dependency('rspec-rails', '~> 2.14.0')
   s.add_development_dependency('mysql2', '~> 0.3')
 end
