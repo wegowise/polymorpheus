@@ -15,6 +15,12 @@ ActiveRecord::Schema.define do
   create_table :alien_demigods
   create_table :supervillains
   create_table :trees
+  create_table :drawings
+  create_table :books
+  create_table :binders
+  create_table :pictures
+  create_table :web_pages
+  create_table :printed_works
 
   create_table :story_arcs do |t|
     t.integer :hero_id

@@ -80,12 +80,14 @@ end
 
 ```ruby
 class Picture < ActiveRecord::Base
+  # takes same additional options as belongs_to
   belongs_to_polymorphic :employee, :product, :as => :imageable
   validates_polymorph :imageable
 end
 
 class Employee < ActiveRecord::Base
-  has_many_as_polymorph :pictures
+  # takes same additional options as has_many
+  has_many_as_polymorph :pictures, inverse_of: employee
 end
 
 class Product < ActiveRecord::Base
