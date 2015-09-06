@@ -6,10 +6,10 @@ module Polymorpheus
     attr_reader :interface_name,
                 :associations
 
-    def initialize(interface_name, association_names)
+    def initialize(interface_name, association_names, options)
       @interface_name = interface_name
       @associations = association_names.map do |association_name|
-        Polymorpheus::InterfaceBuilder::Association.new(association_name)
+        Polymorpheus::InterfaceBuilder::Association.new(association_name, options)
       end
     end
 

@@ -5,10 +5,11 @@ module Polymorpheus
       include ActiveSupport::Inflector
 
       attr_reader :name,
-                  :key
+                  :key,
+                  :options
 
-      def initialize(name)
-        @name = name.to_s.downcase
+      def initialize(name, options)
+        @name, @options = name.to_s.downcase, options
         @key = "#{@name}_id"
       end
 

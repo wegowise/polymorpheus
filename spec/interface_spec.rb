@@ -198,3 +198,18 @@ describe '.validates_polymorph' do
       ["You must specify exactly one of the following: {hero, villain}"]
   end
 end
+
+describe 'association options' do
+  it 'without options' do
+    Draw.new.association(:book).reflection.inverse_of.should == nil
+    Draw.new.association(:binder).reflection.inverse_of.should == nil
+    Book.new.association(:draws).reflection.inverse_of.should == nil
+    Binder.new.association(:draws).reflection.inverse_of.should == nil
+  end
+  it 'with options' do
+    Picture.new.association(:web_page).reflection.inverse_of.name.should == :pictures
+    Picture.new.association(:printed_work).reflection.inverse_of.name.should == :pictures
+    WebPage.new.association(:pictures).reflection.inverse_of.name.should == :web_page
+    PrintedWork.new.association(:pictures).reflection.inverse_of.name.should == :printed_work
+  end
+end
