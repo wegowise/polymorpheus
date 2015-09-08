@@ -198,6 +198,6 @@ pic.polymorpheus.query_condition
 * It uses the [Foreigner gem](https://github.com/matthuhiggins/foreigner) under
   the hood for a few things
 
-polymorpheus is Copyright © 2011-2012 Barun Singh and [WegoWise](
+polymorpheus is Copyright © 2011-2015 Barun Singh and [WegoWise](
 http://wegowise.com). It is free software, and may be redistributed under the
 terms specified in the LICENSE file.
