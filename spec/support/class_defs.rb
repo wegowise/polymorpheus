@@ -1,6 +1,3 @@
-require 'activerecord-tableless'
-
-
 # this is normally done via a Railtie in non-testing situations
 ActiveRecord::Base.send :include, Polymorpheus::Interface
 
@@ -55,26 +52,22 @@ end
 class Tree < ActiveRecord::Base
 end
 
-class TableLess < ActiveRecord::Base
-  has_no_table
-end
-
-class Draw < TableLess
+class Draw < ActiveRecord::Base
   belongs_to_polymorphic :book, :binder, as: :one_way_rel
 end
-class Book < TableLess
+class Book < ActiveRecord::Base
   has_many_as_polymorph :draws
 end
-class Binder < TableLess
+class Binder < ActiveRecord::Base
   has_many_as_polymorph :draws
 end
 
-class Picture < TableLess
+class Picture < ActiveRecord::Base
   belongs_to_polymorphic :web_page, :printed_work, as: :inverted_rel, inverse_of: :pictures
 end
-class WebPage < TableLess
+class WebPage < ActiveRecord::Base
   has_many_as_polymorph :pictures, inverse_of: :web_page
 end
-class PrintedWork < TableLess
+class PrintedWork < ActiveRecord::Base
   has_many_as_polymorph :pictures, inverse_of: :printed_work
 end
