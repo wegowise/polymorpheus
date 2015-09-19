@@ -2,9 +2,10 @@ module Polymorpheus
   module Interface
     module BelongsToPolymorphic
       def belongs_to_polymorphic(*association_names, options)
-        polymorphic_api = options[:as]
+        polymorphic_api = options.delete(:as)
         builder = Polymorpheus::InterfaceBuilder.new(polymorphic_api,
-                                                     association_names)
+                                                     association_names,
+                                                     options)
 
         # The POLYMORPHEUS_ASSOCIATIONS constant is useful for two reasons:
         #
@@ -20,7 +21,7 @@ module Polymorpheus
 
         # Set belongs_to associations
         builder.associations.each do |association|
-          belongs_to association.name.to_sym
+          belongs_to association.name.to_sym, association.options
         end
 
         # Exposed interface for introspection
