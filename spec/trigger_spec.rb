@@ -2,7 +2,6 @@ require 'polymorpheus'
 require 'polymorpheus/trigger'
 
 describe Trigger do
-
   let(:name) { "pets_unique_polyfk_on_INSERT" }
   let(:event) { "INSERT" }
   let(:table) { "pets"}
@@ -26,21 +25,22 @@ describe Trigger do
                  definer, charset, collation_connection, db_collation])
   end
 
-  its(:name) { should == name }
-  its(:event) { should == event }
-  its(:table) { should == table }
-  its(:statement) { should == statement }
-  its(:timing) { should == timing }
-  its(:created) { should == created }
-  its(:sql_mode) { should == sql_mode }
-  its(:definer) { should == definer }
-  its(:charset) { should == charset }
-  its(:collation_connection) { should == collation_connection }
-  its(:db_collation) { should == db_collation }
+  specify do
+    expect(subject.name).to eq(name)
+    expect(subject.event).to eq(event)
+    expect(subject.table).to eq(table)
+    expect(subject.statement).to eq(statement)
+    expect(subject.timing).to eq(timing)
+    expect(subject.created).to eq(created)
+    expect(subject.sql_mode).to eq(sql_mode)
+    expect(subject.definer).to eq(definer)
+    expect(subject.charset).to eq(charset)
+    expect(subject.collation_connection).to eq(collation_connection)
+    expect(subject.db_collation).to eq(db_collation)
 
-  its(:columns) { should == %w{dog_id kitty_id} }
+    expect(subject.columns).to eq(%w{dog_id kitty_id})
 
-  its(:schema_statement) do
-    should == %{  add_polymorphic_triggers(:pets, ["dog_id", "kitty_id"])}
+    expect(subject.schema_statement)
+      .to eq(%{  add_polymorphic_triggers(:pets, ["dog_id", "kitty_id"])})
   end
 end

@@ -3,7 +3,7 @@ shared_examples_for 'mysql2 add sql for polymorphic constraints' do
     before { connection.add_polymorphic_constraints(table, columns, options) }
 
     specify do
-      clean_sql(sql.join("\n")).should == clean_sql(full_constraints_sql)
+      expect(clean_sql(sql.join("\n"))).to eq(clean_sql(full_constraints_sql))
     end
   end
 end
@@ -13,17 +13,19 @@ shared_examples_for 'mysql2 add sql for polymorphic triggers' do
     before { connection.add_polymorphic_triggers(table, columns.keys) }
 
     specify do
-      clean_sql(sql.join("\n")).should == clean_sql(trigger_sql)
+      expect(clean_sql(sql.join("\n"))).to eq(clean_sql(trigger_sql))
     end
   end
 end
 
 shared_examples_for 'mysql2 remove sql for polymorphic constraints' do
   describe "#remove_polymorphic_constraints" do
-    before { connection.remove_polymorphic_constraints(table, columns, options) }
+    before do
+      connection.remove_polymorphic_constraints(table, columns, options)
+    end
 
     specify do
-      clean_sql(sql.join("\n")).should == clean_sql(remove_constraints_sql)
+      expect(clean_sql(sql.join("\n"))).to eq(clean_sql(remove_constraints_sql))
     end
   end
 end

@@ -15,7 +15,7 @@ describe Polymorpheus::SchemaDumper do
 
   before do
     # pretend like we have a trigger defined
-    connection.stub(:triggers).and_return(
+    allow(connection).to receive(:triggers).and_return(
       [Trigger.new(["trigger_name", "INSERT", "pets",
         %{BEGIN
             IF(IF(NEW.dog_id IS NULL, 0, 1) + IF(NEW.kitty_id IS NULL, 0, 1)) <> 1 THEN
@@ -36,11 +36,11 @@ describe Polymorpheus::SchemaDumper do
   end
 
   specify "the schema statement is part of the dump" do
-    subject.index(schema_statement).should be_a(Integer)
+    expect(subject.index(schema_statement)).to be_a(Integer)
   end
 
   specify "there is exactly one instance of the schema statement" do
-    subject.index(schema_statement).should == subject.rindex(schema_statement)
+    expect(subject.index(schema_statement))
+      .to eq(subject.rindex(schema_statement))
   end
-
 end

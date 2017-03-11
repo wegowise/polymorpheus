@@ -156,12 +156,12 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
 
     before do
       connection.stub_sql('show triggers', [:trigger1, :trigger2])
-      Trigger.stub(:new).with(:trigger1).and_return(trigger1)
-      Trigger.stub(:new).with(:trigger2).and_return(trigger2)
+      allow(Trigger).to receive(:new).with(:trigger1).and_return(trigger1)
+      allow(Trigger).to receive(:new).with(:trigger2).and_return(trigger2)
     end
 
     specify do
-      connection.triggers.should == [trigger1, trigger2]
+      expect(connection.triggers).to eq([trigger1, trigger2])
     end
   end
 end
