@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency('activerecord', '>= 3.2', '< 5')
 
-  s.add_development_dependency('rake', '~> 10.4.2')
-  s.add_development_dependency('rspec-rails', '~> 2.14.0')
-  s.add_development_dependency('mysql2', '~> 0.3.10')
+  s.add_development_dependency('rake', '~> 11.2.2')
+  s.add_development_dependency('rspec-rails', '~> 3.5.1')
+  s.add_development_dependency('mysql2', '~> 0.3.21')
 end
