@@ -151,13 +151,13 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
   end
 
   describe "#triggers" do
-    let(:trigger1) { double(Trigger, :name => '1') }
-    let(:trigger2) { double(Trigger, :name => '2') }
+    let(:trigger1) { double(Polymorpheus::Trigger, :name => '1') }
+    let(:trigger2) { double(Polymorpheus::Trigger, :name => '2') }
 
     before do
       connection.stub_sql('show triggers', [:trigger1, :trigger2])
-      Trigger.stub(:new).with(:trigger1).and_return(trigger1)
-      Trigger.stub(:new).with(:trigger2).and_return(trigger2)
+      Polymorpheus::Trigger.stub(:new).with(:trigger1).and_return(trigger1)
+      Polymorpheus::Trigger.stub(:new).with(:trigger2).and_return(trigger2)
     end
 
     specify do

@@ -1,7 +1,7 @@
 require 'polymorpheus'
 require 'polymorpheus/trigger'
 
-describe Trigger do
+describe Polymorpheus::Trigger do
 
   let(:name) { "pets_unique_polyfk_on_INSERT" }
   let(:event) { "INSERT" }
@@ -22,8 +22,9 @@ describe Trigger do
   let(:db_collation) { "utf8_unicode_ci" }
 
   subject do
-    Trigger.new([name, event, table, statement, timing, created, sql_mode,
-                 definer, charset, collation_connection, db_collation])
+    described_class.new([name, event, table, statement, timing, created,
+                         sql_mode, definer, charset, collation_connection,
+                         db_collation])
   end
 
   its(:name) { should == name }

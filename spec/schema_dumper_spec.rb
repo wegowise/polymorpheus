@@ -16,7 +16,7 @@ describe Polymorpheus::SchemaDumper do
   before do
     # pretend like we have a trigger defined
     connection.stub(:triggers).and_return(
-      [Trigger.new(["trigger_name", "INSERT", "pets",
+      [Polymorpheus::Trigger.new(["trigger_name", "INSERT", "pets",
         %{BEGIN
             IF(IF(NEW.dog_id IS NULL, 0, 1) + IF(NEW.kitty_id IS NULL, 0, 1)) <> 1 THEN
               SET NEW = 'Error';

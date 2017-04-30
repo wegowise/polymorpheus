@@ -89,7 +89,7 @@ module Polymorpheus
       end
 
       def triggers
-        execute("show triggers").collect {|t| Trigger.new(t) }
+        execute("show triggers").collect {|t| Polymorpheus::Trigger.new(t) }
       end
 
       #
