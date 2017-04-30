@@ -1,8 +1,6 @@
-require 'polymorpheus'
-require 'polymorpheus/trigger'
+require 'spec_helper'
 
 describe Polymorpheus::Trigger do
-
   let(:name) { "pets_unique_polyfk_on_INSERT" }
   let(:event) { "INSERT" }
   let(:table) { "pets"}

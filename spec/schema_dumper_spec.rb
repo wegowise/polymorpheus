@@ -1,15 +1,6 @@
-require 'active_record'
 require 'spec_helper'
-require 'sql_logger'
-require 'polymorpheus'
-require 'polymorpheus/trigger'
-require 'stringio'
-
-# this is normally done via a Railtie in non-testing situations
-ActiveRecord::SchemaDumper.class_eval { include Polymorpheus::SchemaDumper }
 
 describe Polymorpheus::SchemaDumper do
-
   let(:connection) { ActiveRecord::Base.connection }
   let(:stream) { StringIO.new }
 
@@ -42,5 +33,4 @@ describe Polymorpheus::SchemaDumper do
   specify "there is exactly one instance of the schema statement" do
     subject.index(schema_statement).should == subject.rindex(schema_statement)
   end
-
 end

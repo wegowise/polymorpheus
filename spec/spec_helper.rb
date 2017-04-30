@@ -1,3 +1,18 @@
+require 'active_record'
+require 'polymorpheus'
+require 'stringio'
+
 require 'support/active_record/connection_adapters/abstract_mysql_adapter'
-require 'support/custom_matchers'
-require 'support/db_setup'
+
+ActiveRecord::Base.establish_connection({
+  adapter: 'mysql2',
+  username: 'travis',
+  database: 'polymorpheus_test'
+})
+
+Dir[File.dirname(__FILE__) + '/support/*.rb'].sort.each { |path| require path }
+
+Polymorpheus::Adapter.load!
+
+# This is normally done via a Railtie in non-testing situations.
+ActiveRecord::SchemaDumper.class_eval { include Polymorpheus::SchemaDumper }

@@ -1,11 +1,4 @@
-require 'active_record'
 require 'spec_helper'
-require 'sql_logger'
-require 'polymorpheus'
-require 'polymorpheus/trigger'
-require 'shared_examples'
-
-Polymorpheus::Adapter.load!
 
 describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
 

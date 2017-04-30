@@ -1,9 +1,3 @@
-ActiveRecord::Base.establish_connection({
-  adapter: 'mysql2',
-  username: 'travis',
-  database: 'polymorpheus_test'
-})
-
 ActiveRecord::Base.connection.tables.each do |table|
   ActiveRecord::Base.connection.drop_table table
 end
