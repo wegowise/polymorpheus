@@ -27,7 +27,7 @@ RSpec.configure do |config|
   config.include SqlTestHelpers
 
   config.after do
-    ActiveRecord::Base.connection.tables.each do |table|
+    data_sources.each do |table|
       ActiveRecord::Base.connection.drop_table(table)
     end
   end

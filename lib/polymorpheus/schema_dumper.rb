@@ -3,7 +3,8 @@ module Polymorpheus
     extend ActiveSupport::Concern
 
     included do
-      alias_method_chain :tables, :triggers
+      alias_method :tables_without_triggers, :tables
+      alias_method :tables, :tables_with_triggers
     end
 
     def tables_with_triggers(stream)
