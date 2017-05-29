@@ -3,13 +3,19 @@ require 'spec_helper'
 describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
   # The foreign key name is not truncated, so the maximum column name
   # length ends up being:  64 - "pets_" - "_fk" == 56
-  let(:long_column1) { ('x' * 56).to_sym }
-  let(:long_column2) { ('y' * 56).to_sym }
+  #
+  # Using `t.references` also adds an index on this column, with a slightly
+  # longer name: 64 - "index_pets_on_" - "_id" == 46
+  #
+  # Go with the shorter of the two here, since it's still long enough to test
+  # the generation of Polymorpheus' trigger names.
+  let(:long_column1) { ('x' * 46).to_sym }
+  let(:long_column2) { ('y' * 46).to_sym }
 
   before do
     create_table(:pets) do |t|
-      t.integer :cat_id
-      t.integer :dog_id
+      t.references :cat
+      t.references :dog
       t.string :name
       t.string :color
     end
@@ -146,13 +152,13 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
 
     it 'truncates long trigger names to 64 characters' do
       create_table(:pets) do |t|
-        t.integer long_column1
-        t.integer long_column2
+        t.references long_column1
+        t.references long_column2
       end
 
       add_polymorphic_constraints(
         'pets',
-        { long_column1 => 'cats.id', long_column2 => 'dogs.id' }
+        { "#{long_column1}_id" => 'cats.id', "#{long_column2}_id" => 'dogs.id' }
       )
 
       should_execute_sql <<-EOS
@@ -161,14 +167,14 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
         CREATE TRIGGER pfki_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy BEFORE INSERT ON pets
           FOR EACH ROW
             BEGIN
-              IF(IF(NEW.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx IS NULL, 0, 1) + IF(NEW.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy IS NULL, 0, 1)) <> 1 THEN
+              IF(IF(NEW.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_id IS NULL, 0, 1) + IF(NEW.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy_id IS NULL, 0, 1)) <> 1 THEN
                 SET NEW = 'Error';
               END IF;
             END
         CREATE TRIGGER pfku_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy BEFORE UPDATE ON pets
           FOR EACH ROW
             BEGIN
-              IF(IF(NEW.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx IS NULL, 0, 1) + IF(NEW.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy IS NULL, 0, 1)) <> 1 THEN
+              IF(IF(NEW.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_id IS NULL, 0, 1) + IF(NEW.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy_id IS NULL, 0, 1)) <> 1 THEN
                 SET NEW = 'Error';
               END IF;
             END
@@ -280,19 +286,16 @@ describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
 
     it 'truncates long trigger names to 64 characters' do
       create_table(:pets) do |t|
-        t.integer long_column1
-        t.integer long_column2
+        t.references long_column1
+        t.references long_column2
       end
-      add_polymorphic_constraints(
+      args = [
         'pets',
-        { long_column1 => 'cats.id', long_column2 => 'dogs.id' }
-      )
+        { "#{long_column1}_id" => 'cats.id', "#{long_column2}_id" => 'dogs.id' }
+      ]
+      add_polymorphic_constraints(*args)
       clear_sql_history
-
-      remove_polymorphic_constraints(
-        'pets',
-        { long_column1 => 'cats.id', long_column2 => 'dogs.id' }
-      )
+      remove_polymorphic_constraints(*args)
       should_execute_sql <<-EOS
         DROP TRIGGER IF EXISTS pfki_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy
         DROP TRIGGER IF EXISTS pfku_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy

@@ -8,8 +8,8 @@ describe Polymorpheus::Interface::BelongsToPolymorphic do
 
   before do
     create_table :story_arcs do |t|
-      t.integer :hero_id
-      t.integer :villain_id
+      t.references :hero
+      t.references :villain
     end
     create_table :heros
     create_table :villains
@@ -64,8 +64,8 @@ describe Polymorpheus::Interface::BelongsToPolymorphic do
 
     before do
       create_table :superpowers do |t|
-        t.integer :superhero_id
-        t.integer :supervillain_id
+        t.references :superhero
+        t.references :supervillain
       end
     end
 

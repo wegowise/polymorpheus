@@ -3,10 +3,10 @@ require 'spec_helper'
 describe Polymorpheus::Interface::HasManyAsPolymorph do
   before do
     create_table :story_arcs do |t|
-      t.integer :hero_id
-      t.integer :villain_id
-      t.integer :battle_id
-      t.integer :issue_id
+      t.references :hero
+      t.references :villain
+      t.references :battle
+      t.references :issue
     end
     create_table :battles
     create_table :heros
