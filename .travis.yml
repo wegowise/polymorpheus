@@ -4,8 +4,10 @@ cache: bundler
 rvm:
   - 1.9.3
   - 2.0.0
-  - 2.1.2
-  - 2.2.2
+  - 2.1.10
+  - 2.2.7
+  - 2.3.4
+  - 2.4.1
 gemfile:
   - gemfiles/3.0.gemfile
   - gemfiles/4.0.gemfile
@@ -19,13 +21,25 @@ matrix:
       gemfile: gemfiles/5.0.gemfile
     - rvm: 2.0.0
       gemfile: gemfiles/5.0.gemfile
-    - rvm: 2.1.2
+    - rvm: 2.1.10
       gemfile: gemfiles/5.0.gemfile
     - rvm: 1.9.3
       gemfile: gemfiles/5.1.gemfile
     - rvm: 2.0.0
       gemfile: gemfiles/5.1.gemfile
-    - rvm: 2.1.2
+    - rvm: 2.1.10
       gemfile: gemfiles/5.1.gemfile
+    - rvm: 2.3.4
+      gemfile: gemfiles/3.0.gemfile
+    - rvm: 2.3.4
+      gemfile: gemfiles/4.0.gemfile
+    - rvm: 2.3.4
+      gemfile: gemfiles/4.1.gemfile
+    - rvm: 2.4.1
+      gemfile: gemfiles/3.0.gemfile
+    - rvm: 2.4.1
+      gemfile: gemfiles/4.0.gemfile
+    - rvm: 2.4.1
+      gemfile: gemfiles/4.1.gemfile
 before_script:
   - mysql -e 'create database polymorpheus_test;'
