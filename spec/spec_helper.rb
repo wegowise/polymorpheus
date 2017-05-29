@@ -16,3 +16,16 @@ Polymorpheus::Adapter.load!
 
 # This is normally done via a Railtie in non-testing situations.
 ActiveRecord::SchemaDumper.class_eval { include Polymorpheus::SchemaDumper }
+ActiveRecord::Migration.verbose = false
+
+RSpec.configure do |config|
+  config.include ConnectionHelpers
+  config.include SchemaHelpers
+  config.include SqlTestHelpers
+
+  config.after do
+    ActiveRecord::Base.connection.tables.each do |table|
+      ActiveRecord::Base.connection.drop_table(table)
+    end
+  end
+end

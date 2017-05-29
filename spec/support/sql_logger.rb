@@ -21,7 +21,7 @@ module Polymorpheus
         @stubbed[sql]
       else
         sql_statements << sql
-        sql
+        original_execute(sql, name)
       end
     end
 

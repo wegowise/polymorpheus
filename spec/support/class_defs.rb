@@ -42,6 +42,11 @@ class Battle < ActiveRecord::Base
   has_many :heros, through: :story_arcs
 end
 
+class Issue < ActiveRecord::Base
+  has_many :story_arcs
+  has_many :heros, through: :story_arcs
+end
+
 # But only super-people have superpowers
 class Superpower < ActiveRecord::Base
   belongs_to_polymorphic :superhero, :supervillain, as: :wielder
@@ -70,4 +75,11 @@ class WebPage < ActiveRecord::Base
 end
 class PrintedWork < ActiveRecord::Base
   has_many_as_polymorph :pictures, inverse_of: :printed_work
+end
+
+class Pet < ActiveRecord::Base
+end
+class Cat < ActiveRecord::Base
+end
+class Dog < ActiveRecord::Base
 end

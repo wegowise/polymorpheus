@@ -1,160 +1,314 @@
 require 'spec_helper'
 
 describe Polymorpheus::ConnectionAdapters::MysqlAdapter do
-
-  #######################################################
-  # Setup
-  #######################################################
-
-  before(:all) do
-    class << ActiveRecord::Base.connection
-      include Polymorpheus::SqlLogger
-      alias_method :original_execute, :execute
-      alias_method :execute, :log_sql_statements
-    end
-  end
-
-  after(:all) do
-    class << ActiveRecord::Base.connection
-      alias_method :execute, :original_execute
-    end
-  end
-
-  let(:connection) { ActiveRecord::Base.connection }
-  let(:sql) { connection.sql_statements }
-
-  def clean_sql(sql_string)
-    sql_string.gsub(/^\n\s*/,'').gsub(/\s*\n\s*$/,'')
-      .gsub(/\n\s*/,"\n").gsub(/\s*$/,"")
-      .gsub('`', '')
-      .gsub(/\ FOREIGN KEY/, "\nFOREIGN KEY")
-      .gsub(/\ REFERENCES/, "\nREFERENCES")
-      .gsub(/\ ON DELETE/, "\nON DELETE")
-      .gsub(/\ ON UPDATE/, "\nON UPDATE")
-      .gsub(/([[:alpha:]])\(/, '\1 (')
-  end
+  # The foreign key name is not truncated, so the maximum column name
+  # length ends up being:  64 - "pets_" - "_fk" == 56
+  let(:long_column1) { ('x' * 56).to_sym }
+  let(:long_column2) { ('y' * 56).to_sym }
 
   before do
-    connection.clear_sql_history
-    subject
+    create_table(:pets) do |t|
+      t.integer :cat_id
+      t.integer :dog_id
+      t.string :name
+      t.string :color
+    end
+
+    create_table(:cats)
+    create_table(:dogs)
+
+    clear_sql_history
+  end
+
+  after do
+    drop_table :pets
+    drop_table :cats
+    drop_table :dogs
   end
 
   #######################################################
   # Specs
   #######################################################
 
-  describe "migration statements" do
-    context "basic case with no uniqueness constraints" do
-      include_context "columns with short names"
-      let(:options) { {} }
+  describe '#add_polymorphic_constraints' do
+    it 'adds foreign keys with no uniqueness constraints' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' }
+      )
 
-      it_behaves_like "mysql2 migration statements"
+      should_execute_sql <<-EOS
+        DROP TRIGGER IF EXISTS pfki_pets_catid_dogid
+        DROP TRIGGER IF EXISTS pfku_pets_catid_dogid
+        CREATE TRIGGER pfki_pets_catid_dogid BEFORE INSERT ON pets
+          FOR EACH ROW
+            BEGIN
+              IF(IF(NEW.cat_id IS NULL, 0, 1) + IF(NEW.dog_id IS NULL, 0, 1)) <> 1 THEN
+                SET NEW = 'Error';
+              END IF;
+            END
+        CREATE TRIGGER pfku_pets_catid_dogid BEFORE UPDATE ON pets
+          FOR EACH ROW
+            BEGIN
+              IF(IF(NEW.cat_id IS NULL, 0, 1) + IF(NEW.dog_id IS NULL, 0, 1)) <> 1 THEN
+                SET NEW = 'Error';
+              END IF;
+            END
+
+        ALTER TABLE `pets` ADD CONSTRAINT `pets_cat_id_fk`
+        FOREIGN KEY (`cat_id`)
+        REFERENCES `cats`(id)
+
+        ALTER TABLE `pets` ADD CONSTRAINT `pets_dog_id_fk`
+        FOREIGN KEY (`dog_id`)
+        REFERENCES `dogs`(id)
+      EOS
     end
 
-    context "when uniqueness constraint is specified as true" do
-      include_context "columns with short names"
-      let(:options) { { :unique => true } }
-      let(:unique_key_sql) do
-        %{ CREATE UNIQUE INDEX pfk_pets_dogid ON pets (dog_id)
-           CREATE UNIQUE INDEX pfk_pets_kittyid ON pets (kitty_id) }
-      end
-      let(:remove_indices_sql) do
-        %{ DROP INDEX pfk_pets_kittyid ON pets
-           DROP INDEX pfk_pets_dogid ON pets }
-      end
+    it 'adds uniqueness specified with true' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        unique: true
+      )
 
-      it_behaves_like "mysql2 migration statements"
+      should_execute_sql <<-EOS
+        CREATE UNIQUE INDEX pfk_pets_catid ON pets (cat_id)
+        CREATE UNIQUE INDEX pfk_pets_dogid ON pets (dog_id)
+      EOS
     end
 
-    context "specifying uniqueness constraint as a string" do
-      include_context "columns with short names"
-      let(:options) { { :unique => 'field1' } }
-      let(:unique_key_sql) do
-        %{ CREATE UNIQUE INDEX pfk_pets_dogid_field1 ON pets (dog_id, field1)
-           CREATE UNIQUE INDEX pfk_pets_kittyid_field1 ON pets (kitty_id, field1) }
-      end
-      let(:remove_indices_sql) do
-        %{ DROP INDEX pfk_pets_kittyid_field1 ON pets
-           DROP INDEX pfk_pets_dogid_field1 ON pets }
-      end
-
-      it_behaves_like "mysql2 migration statements"
+    it 'adds uniqueness specified with a string' do
+      add_polymorphic_constraints('pets', { cat_id: 'cats.id' }, unique: 'name')
+      should_execute_sql <<-EOS
+        CREATE UNIQUE INDEX pfk_pets_catid_name ON pets (cat_id, name)
+      EOS
     end
 
-    context "specifying uniqueness constraint as an array" do
-      include_context "columns with short names"
-      let(:options) { { :unique => [:foo, :bar] } }
-      let(:unique_key_sql) do
-        %{ CREATE UNIQUE INDEX pfk_pets_dogid_foo_bar ON pets (dog_id, foo, bar)
-           CREATE UNIQUE INDEX pfk_pets_kittyid_foo_bar ON pets (kitty_id, foo, bar) }
-      end
-      let(:remove_indices_sql) do
-        %{ DROP INDEX pfk_pets_kittyid_foo_bar ON pets
-           DROP INDEX pfk_pets_dogid_foo_bar ON pets }
-      end
-
-      it_behaves_like "mysql2 migration statements"
+    it 'adds uniqueness specified as an array' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id' },
+        unique: [:name, :color]
+      )
+      should_execute_sql <<-EOS
+        CREATE UNIQUE INDEX pfk_pets_catid_name_color ON pets (cat_id, name, color)
+      EOS
     end
 
-    context "specifying an on update constraint" do
-      include_context "columns with short names"
-      let(:options) { { :on_update => :cascade } }
-      let(:fkey_sql) do
-        %{ ALTER TABLE `pets` ADD CONSTRAINT `pets_dog_id_fk` FOREIGN KEY (`dog_id`) REFERENCES `dogs`(id) ON UPDATE CASCADE
-           ALTER TABLE `pets` ADD CONSTRAINT `pets_kitty_id_fk` FOREIGN KEY (`kitty_id`) REFERENCES `cats`(name) ON UPDATE CASCADE }
-      end
-
-      it_behaves_like "mysql2 migration statements"
+    it 'adds an on update constraint' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id' },
+        on_update: :cascade
+      )
+      should_execute_sql <<-EOS
+        ALTER TABLE `pets` ADD CONSTRAINT `pets_cat_id_fk`
+        FOREIGN KEY (`cat_id`)
+        REFERENCES `cats`(id)
+        ON UPDATE CASCADE
+      EOS
     end
 
-    context "specifying on delete and on update constraints" do
-      include_context "columns with short names"
-      let(:options) { { :on_update => :cascade, :on_delete => :restrict } }
-      let(:fkey_sql) do
-        %{ ALTER TABLE `pets` ADD CONSTRAINT `pets_dog_id_fk` FOREIGN KEY (`dog_id`) REFERENCES `dogs`(id) ON DELETE RESTRICT ON UPDATE CASCADE
-           ALTER TABLE `pets` ADD CONSTRAINT `pets_kitty_id_fk` FOREIGN KEY (`kitty_id`) REFERENCES `cats`(name) ON DELETE RESTRICT ON UPDATE CASCADE }
-      end
-
-      it_behaves_like "mysql2 migration statements"
+    it 'raises an error when on_update has invalid arguments' do
+      expect do
+        add_polymorphic_constraints(
+          'pets',
+          { cat_id: 'cats.id' },
+          on_update: :invalid
+        )
+      end.to raise_error ArgumentError
     end
 
-    context "when on_delete and on_update have invalid arguments" do
-      include_context "columns with short names"
-      let(:options) { { :on_update => :invalid, :on_delete => nil } }
-      let(:fkey_sql) do
-        %{ ALTER TABLE `pets` ADD CONSTRAINT `pets_dog_id_fk` FOREIGN KEY (`dog_id`) REFERENCES `dogs`(id)
-           ALTER TABLE `pets` ADD CONSTRAINT `pets_kitty_id_fk` FOREIGN KEY (`kitty_id`) REFERENCES `cats`(name) }
-      end
-
-      it "#add_polymorphic_constraints raises an argument error" do
-        expect do
-          connection.add_polymorphic_constraints(table, columns, options)
-        end.to raise_error ArgumentError
-      end
-
-      it_behaves_like 'mysql2 add sql for polymorphic triggers'
-      it_behaves_like 'mysql2 remove sql for polymorphic constraints'
+    it 'adds an on delete constraint' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id' },
+        on_delete: :cascade
+      )
+      should_execute_sql <<-EOS
+        ALTER TABLE `pets` ADD CONSTRAINT `pets_cat_id_fk`
+        FOREIGN KEY (`cat_id`)
+        REFERENCES `cats`(id)
+        ON DELETE CASCADE
+      EOS
     end
 
-    context "when table and column names combined are very long" do
-      include_context "columns with long names"
+    it 'raises an error when on_delete has invalid arguments' do
+      expect do
+        add_polymorphic_constraints(
+          'pets',
+          { cat_id: 'cats.id' },
+          on_update: :invalid
+        )
+      end.to raise_error ArgumentError
+    end
 
-      it_behaves_like "mysql2 migration statements"
+    it 'truncates long trigger names to 64 characters' do
+      create_table(:pets) do |t|
+        t.integer long_column1
+        t.integer long_column2
+      end
+
+      add_polymorphic_constraints(
+        'pets',
+        { long_column1 => 'cats.id', long_column2 => 'dogs.id' }
+      )
+
+      should_execute_sql <<-EOS
+        DROP TRIGGER IF EXISTS pfki_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy
+        DROP TRIGGER IF EXISTS pfku_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy
+        CREATE TRIGGER pfki_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy BEFORE INSERT ON pets
+          FOR EACH ROW
+            BEGIN
+              IF(IF(NEW.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx IS NULL, 0, 1) + IF(NEW.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy IS NULL, 0, 1)) <> 1 THEN
+                SET NEW = 'Error';
+              END IF;
+            END
+        CREATE TRIGGER pfku_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy BEFORE UPDATE ON pets
+          FOR EACH ROW
+            BEGIN
+              IF(IF(NEW.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx IS NULL, 0, 1) + IF(NEW.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy IS NULL, 0, 1)) <> 1 THEN
+                SET NEW = 'Error';
+              END IF;
+            END
+      EOS
+    end
+  end
+
+  describe '#remove_polymorphic_constraints' do
+    it 'removes triggers and foreign keys with no uniqueness constraints' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        unique: true
+      )
+      clear_sql_history
+
+      remove_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' }
+      )
+      should_execute_sql <<-EOS
+        DROP TRIGGER IF EXISTS pfki_pets_catid_dogid
+        DROP TRIGGER IF EXISTS pfku_pets_catid_dogid
+      EOS
+    end
+
+    it 'removes uniqueness index specified with true' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        unique: true
+      )
+      clear_sql_history
+
+      remove_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        unique: true
+      )
+      should_execute_sql <<-EOS
+        DROP INDEX pfk_pets_catid ON pets
+        DROP INDEX pfk_pets_dogid ON pets
+      EOS
+    end
+
+    it 'removes uniqueness index specified with a string' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        unique: 'name'
+      )
+      clear_sql_history
+
+      remove_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        unique: 'name'
+      )
+
+    end
+
+    it 'removes uniqueness index specified with an array' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        unique: [:name, :color]
+      )
+      clear_sql_history
+
+      remove_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        unique: [:name, :color]
+      )
+
+    end
+
+    it 'removes an on update constraint' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        on_update: :cascade
+      )
+      clear_sql_history
+
+      remove_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        on_update: :cascade
+      )
+
+    end
+
+    it 'removes an on delete constraint' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        on_delete: :cascade
+      )
+      clear_sql_history
+
+      remove_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' },
+        on_update: :cascade
+      )
+
+    end
+
+    it 'truncates long trigger names to 64 characters' do
+      create_table(:pets) do |t|
+        t.integer long_column1
+        t.integer long_column2
+      end
+      add_polymorphic_constraints(
+        'pets',
+        { long_column1 => 'cats.id', long_column2 => 'dogs.id' }
+      )
+      clear_sql_history
+
+      remove_polymorphic_constraints(
+        'pets',
+        { long_column1 => 'cats.id', long_column2 => 'dogs.id' }
+      )
+      should_execute_sql <<-EOS
+        DROP TRIGGER IF EXISTS pfki_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy
+        DROP TRIGGER IF EXISTS pfku_pets_xxxxxxxxxxxxxxxxxxxxxxxxxx_yyyyyyyyyyyyyyyyyyyyyyyyyy
+      EOS
     end
   end
 
   describe "#triggers" do
-    let(:trigger1) { double(Polymorpheus::Trigger, :name => '1') }
-    let(:trigger2) { double(Polymorpheus::Trigger, :name => '2') }
-
-    before do
-      connection.stub_sql('show triggers', [:trigger1, :trigger2])
-      Polymorpheus::Trigger.stub(:new).with(:trigger1).and_return(trigger1)
-      Polymorpheus::Trigger.stub(:new).with(:trigger2).and_return(trigger2)
-    end
-
-    specify do
-      connection.triggers.should == [trigger1, trigger2]
+    it 'returns the triggers for the current schema' do
+      add_polymorphic_constraints(
+        'pets',
+        { cat_id: 'cats.id', dog_id: 'dogs.id' }
+      )
+      expect(triggers.map(&:name)).to eq(
+        ['pfki_pets_catid_dogid', 'pfku_pets_catid_dogid']
+      )
     end
   end
 end
