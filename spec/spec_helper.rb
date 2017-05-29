@@ -19,6 +19,9 @@ ActiveRecord::SchemaDumper.class_eval { include Polymorpheus::SchemaDumper }
 ActiveRecord::Migration.verbose = false
 
 RSpec.configure do |config|
+  config.order = :random
+  Kernel.srand config.seed
+
   config.include ConnectionHelpers
   config.include SchemaHelpers
   config.include SqlTestHelpers
