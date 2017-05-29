@@ -10,7 +10,7 @@ module Polymorpheus
       tables_without_triggers(stream)
 
       if @connection.respond_to?(:triggers)
-        @connection.triggers.collect(&:schema_statement).each do |statement|
+        @connection.triggers.collect(&:schema_statement).uniq.each do |statement|
           stream.puts statement
         end
       end

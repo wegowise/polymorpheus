@@ -5,25 +5,28 @@ describe Polymorpheus::SchemaDumper do
   let(:stream) { StringIO.new }
 
   before do
-    # pretend like we have a trigger defined
-    connection.stub(:triggers).and_return(
-      [Polymorpheus::Trigger.new(["trigger_name", "INSERT", "pets",
-        %{BEGIN
-            IF(IF(NEW.dog_id IS NULL, 0, 1) + IF(NEW.kitty_id IS NULL, 0, 1)) <> 1 THEN
-              SET NEW = 'Error';
-            END IF;
-          END},
-        "BEFORE", nil, "", "production@%", "utf8", "utf8_general_ci",
-        "utf8_unicode_ci"])]
+    create_table :story_arcs do |t|
+      t.integer :hero_id
+      t.integer :villain_id
+    end
+    create_table :heros
+    create_table :villains
+    ActiveRecord::Base.connection.add_polymorphic_constraints(
+      'story_arcs',
+      { hero_id: 'heros.id', villain_id: 'villains.id' }
     )
 
     ActiveRecord::SchemaDumper.dump(connection, stream)
   end
 
+  after do
+    drop_table :story_arcs # drop first, due to the foreign key
+  end
+
   subject { stream.string }
 
   let(:schema_statement) do
-    %{  add_polymorphic_triggers(:pets, ["dog_id", "kitty_id"])}
+    %{  add_polymorphic_triggers(:story_arcs, ["hero_id", "villain_id"])}
   end
 
   specify "the schema statement is part of the dump" do
