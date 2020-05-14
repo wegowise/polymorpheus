@@ -94,42 +94,52 @@ describe Polymorpheus::Interface::BelongsToPolymorphic do
     context 'when there is no relationship defined' do
       let(:story_arc) { StoryArc.new }
 
-      its(:associations) { should match_associations(:hero, :villain) }
-      its(:active_association) { should == nil }
-      its(:query_condition) { should == nil }
+      specify do
+        expect(interface.associations).to match_associations(:hero, :villain)
+      end
+      specify { expect(interface.active_association).to eq nil }
+      specify { expect(interface.query_condition).to eq nil }
     end
 
     context 'when there is are multiple relationships defined' do
       let(:story_arc) { StoryArc.new(hero_id: hero.id, villain_id: villain.id) }
 
-      its(:associations) { should match_associations(:hero, :villain) }
-      its(:active_association) { should == nil }
-      its(:query_condition) { should == nil }
+      specify do
+        expect(interface.associations).to match_associations(:hero, :villain)
+      end
+      specify { expect(interface.active_association).to eq nil }
+      specify { expect(interface.query_condition).to eq nil }
     end
 
     context 'when there is one relationship defined through the id value' do
       let(:story_arc) { StoryArc.new(hero_id: hero.id) }
 
-      its(:associations) { should match_associations(:hero, :villain) }
-      its(:active_association) { be_association(:hero) }
-      its(:query_condition) { should == { 'hero_id' => hero.id } }
+      specify do
+        expect(interface.associations).to match_associations(:hero, :villain)
+      end
+      specify { expect(interface.active_association).to be_association(:hero) }
+      specify { expect(interface.query_condition).to eq('hero_id' => hero.id) }
     end
 
     context 'when there is one relationship defined through the setter' do
       let(:story_arc) { StoryArc.new(character: hero) }
 
-      its(:associations) { should match_associations(:hero, :villain) }
-      its(:active_association) { be_association(:hero) }
-      its(:query_condition) { should == { 'hero_id' => hero.id } }
+      specify do
+        expect(interface.associations).to match_associations(:hero, :villain)
+      end
+      specify { expect(interface.active_association).to be_association(:hero) }
+      specify { expect(interface.query_condition).to eq('hero_id' => hero.id) }
     end
 
     context 'when there is one association, to a new record' do
       let(:new_hero) { Hero.new }
       let(:story_arc) { StoryArc.new(character: new_hero) }
 
-      its(:associations) { should match_associations(:hero, :villain) }
-      its(:active_association) { be_association(:hero) }
-      its(:query_condition) { should == nil }
+      specify do
+        expect(interface.associations).to match_associations(:hero, :villain)
+      end
+      specify { expect(interface.active_association).to be_association(:hero) }
+      specify { expect(interface.query_condition).to eq nil }
     end
   end
 end

@@ -19,27 +19,39 @@ describe Polymorpheus::Trigger do
   let(:collation_connection) { "utf8_general_ci" }
   let(:db_collation) { "utf8_unicode_ci" }
 
-  subject do
-    described_class.new([name, event, table, statement, timing, created,
-                         sql_mode, definer, charset, collation_connection,
-                         db_collation])
+  let(:trigger) do
+    described_class.new(
+      [
+        name,
+        event,
+        table,
+        statement,
+        timing,
+        created,
+        sql_mode,
+        definer,
+        charset,
+        collation_connection,
+        db_collation
+      ]
+    )
   end
 
-  its(:name) { should == name }
-  its(:event) { should == event }
-  its(:table) { should == table }
-  its(:statement) { should == statement }
-  its(:timing) { should == timing }
-  its(:created) { should == created }
-  its(:sql_mode) { should == sql_mode }
-  its(:definer) { should == definer }
-  its(:charset) { should == charset }
-  its(:collation_connection) { should == collation_connection }
-  its(:db_collation) { should == db_collation }
+  specify { expect(trigger.name).to eq name }
+  specify { expect(trigger.event).to eq event }
+  specify { expect(trigger.table).to eq table }
+  specify { expect(trigger.statement).to eq statement }
+  specify { expect(trigger.timing).to eq timing }
+  specify { expect(trigger.created).to eq created }
+  specify { expect(trigger.sql_mode).to eq sql_mode }
+  specify { expect(trigger.definer).to eq definer }
+  specify { expect(trigger.charset).to eq charset }
+  specify { expect(trigger.collation_connection).to eq collation_connection }
+  specify { expect(trigger.db_collation).to eq db_collation }
 
-  its(:columns) { should == %w{dog_id kitty_id} }
+  specify { expect(trigger.columns).to eq %w[dog_id kitty_id] }
 
-  its(:schema_statement) do
-    should == %{  add_polymorphic_triggers(:pets, ["dog_id", "kitty_id"])}
+  specify do
+    expect(trigger.schema_statement).to eq %{  add_polymorphic_triggers(:pets, ["dog_id", "kitty_id"])}
   end
 end
