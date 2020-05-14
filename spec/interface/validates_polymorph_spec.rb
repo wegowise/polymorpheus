@@ -13,23 +13,25 @@ describe Polymorpheus::Interface::ValidatesPolymorph do
     create_table(:villains)
   end
 
-  specify { StoryArc.new(character: hero).valid?.should == true }
-  specify { StoryArc.new(character: villain).valid?.should == true }
-  specify { StoryArc.new(hero_id: hero.id).valid?.should == true }
-  specify { StoryArc.new(hero: hero).valid?.should == true }
-  specify { StoryArc.new(hero: Hero.new).valid?.should == true }
+  specify { expect(StoryArc.new(character: hero).valid?).to eq(true) }
+  specify { expect(StoryArc.new(character: villain).valid?).to eq(true) }
+  specify { expect(StoryArc.new(hero_id: hero.id).valid?).to eq(true) }
+  specify { expect(StoryArc.new(hero: hero).valid?).to eq(true) }
+  specify { expect(StoryArc.new(hero: Hero.new).valid?).to eq(true) }
 
   it 'is invalid if no association is specified' do
     story_arc = StoryArc.new
-    story_arc.valid?.should == false
-    story_arc.errors[:base].should ==
+    expect(story_arc.valid?).to eq(false)
+    expect(story_arc.errors[:base]).to eq(
       ["You must specify exactly one of the following: {hero, villain}"]
+    )
   end
 
   it 'is invalid if multiple associations are specified' do
     story_arc = StoryArc.new(hero_id: hero.id, villain_id: villain.id)
-    story_arc.valid?.should == false
-    story_arc.errors[:base].should ==
+    expect(story_arc.valid?).to eq(false)
+    expect(story_arc.errors[:base]).to eq(
       ["You must specify exactly one of the following: {hero, villain}"]
+    )
   end
 end

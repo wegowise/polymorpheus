@@ -35,7 +35,7 @@ module SqlTestHelpers
     end
 
     def should_execute_sql(expected)
-      expect(clean_sql(sql.join("\n"))).to include(clean_sql(expected.squish))
+      expect(clean_sql(sql.join("\n"))).to include(clean_sql(expected))
     end
   end
 end

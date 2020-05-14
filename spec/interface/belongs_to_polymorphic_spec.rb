@@ -15,9 +15,12 @@ describe Polymorpheus::Interface::BelongsToPolymorphic do
     create_table :villains
   end
 
-  specify { StoryArc::POLYMORPHEUS_ASSOCIATIONS.should == %w[hero villain] }
-  specify { Superpower::POLYMORPHEUS_ASSOCIATIONS.should == %w[superhero
-                                                               supervillain] }
+  specify do
+    expect(StoryArc::POLYMORPHEUS_ASSOCIATIONS).to eq(%w[hero villain])
+  end
+  specify do
+    expect(Superpower::POLYMORPHEUS_ASSOCIATIONS).to eq(%w[superhero supervillain])
+  end
 
   describe "setter methods for ActiveRecord objects" do
     let(:story_arc) { StoryArc.new(attributes) }
@@ -25,37 +28,38 @@ describe Polymorpheus::Interface::BelongsToPolymorphic do
 
     it "sets the correct attribute value for the setter" do
       story_arc.character = hero
-      story_arc.hero_id.should == hero.id
-      story_arc.villain_id.should == nil
+      expect(story_arc.hero_id).to eq(hero.id)
+      expect(story_arc.villain_id).to eq(nil)
     end
 
     it "sets competing associations to nil" do
       story_arc.character = hero
-      story_arc.hero_id.should == hero.id
+      expect(story_arc.hero_id).to eq(hero.id)
       story_arc.character = villain
-      story_arc.villain_id.should == villain.id
-      story_arc.hero_id.should == nil
+      expect(story_arc.villain_id).to eq(villain.id)
+      expect(story_arc.hero_id).to eq(nil)
     end
 
     it "throws an error if the assigned object isn't a valid type" do
       create_table :trees
 
       tree = Tree.create!
-      expect { story_arc.character = tree }
-        .to raise_error(Polymorpheus::Interface::InvalidTypeError,
-                        "Invalid type. Must be one of {hero, villain}")
+      expect { story_arc.character = tree }.to raise_error(
+        Polymorpheus::Interface::InvalidTypeError,
+        "Invalid type. Must be one of {hero, villain}"
+      )
     end
 
     it "does not throw an error if the assigned object is a subclass of a
     valid type" do
       expect { story_arc.character = superhero }.not_to raise_error
-      story_arc.hero_id.should == superhero.id
+      expect(story_arc.hero_id).to eq(superhero.id)
     end
 
     it "does not throw an error if the assigned object is a descendant of a
     valid type" do
       expect { story_arc.character = alien_demigod }.not_to raise_error
-      story_arc.hero_id.should == alien_demigod.id
+      expect(story_arc.hero_id).to eq(alien_demigod.id)
     end
   end
 
@@ -79,12 +83,12 @@ describe Polymorpheus::Interface::BelongsToPolymorphic do
 
     it "works if the assigned object is of the specified class" do
       expect { superpower.wielder = superhero }.not_to raise_error
-      superpower.superhero_id.should == superhero.id
+      expect(superpower.superhero_id).to eq(superhero.id)
     end
 
     it "works if the assigned object is an instance of a child class" do
       expect { superpower.wielder = alien_demigod }.not_to raise_error
-      superpower.superhero_id.should == alien_demigod.id
+      expect(superpower.superhero_id).to eq(alien_demigod.id)
     end
   end
 

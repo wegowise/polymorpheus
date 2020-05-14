@@ -7,10 +7,10 @@ describe Polymorpheus::Interface do
       create_table :books
       create_table :binders
 
-      Drawing.new.association(:book).reflection.inverse_of.should == nil
-      Drawing.new.association(:binder).reflection.inverse_of.should == nil
-      Book.new.association(:drawings).reflection.inverse_of.should == nil
-      Binder.new.association(:drawings).reflection.inverse_of.should == nil
+      expect(Drawing.new.association(:book).reflection.inverse_of).to eq(nil)
+      expect(Drawing.new.association(:binder).reflection.inverse_of).to eq(nil)
+      expect(Book.new.association(:drawings).reflection.inverse_of).to eq(nil)
+      expect(Binder.new.association(:drawings).reflection.inverse_of).to eq(nil)
     end
 
     it 'with options' do
@@ -18,10 +18,10 @@ describe Polymorpheus::Interface do
       create_table :web_pages
       create_table :printed_works
 
-      Picture.new.association(:web_page).reflection.inverse_of.name.should == :pictures
-      Picture.new.association(:printed_work).reflection.inverse_of.name.should == :pictures
-      WebPage.new.association(:pictures).reflection.inverse_of.name.should == :web_page
-      PrintedWork.new.association(:pictures).reflection.inverse_of.name.should == :printed_work
+      expect(Picture.new.association(:web_page).reflection.inverse_of.name).to eq(:pictures)
+      expect(Picture.new.association(:printed_work).reflection.inverse_of.name).to eq(:pictures)
+      expect(WebPage.new.association(:pictures).reflection.inverse_of.name).to eq(:web_page)
+      expect(PrintedWork.new.association(:pictures).reflection.inverse_of.name).to eq(:printed_work)
     end
   end
 end

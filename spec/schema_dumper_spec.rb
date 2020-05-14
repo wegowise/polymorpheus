@@ -30,10 +30,10 @@ describe Polymorpheus::SchemaDumper do
   end
 
   specify "the schema statement is part of the dump" do
-    subject.index(schema_statement).should be_a(Integer)
+    expect(subject.index(schema_statement)).to be_a(Integer)
   end
 
   specify "there is exactly one instance of the schema statement" do
-    subject.index(schema_statement).should == subject.rindex(schema_statement)
+    expect(subject.index(schema_statement)).to eq(subject.rindex(schema_statement))
   end
 end
