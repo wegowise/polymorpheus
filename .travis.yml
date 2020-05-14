@@ -1,5 +1,7 @@
 language: ruby
 cache: bundler
+services:
+  - mysql
 rvm:
   - 1.9.3
   - 2.0.0
