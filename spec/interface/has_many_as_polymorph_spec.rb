@@ -61,14 +61,26 @@ describe Polymorpheus::Interface::HasManyAsPolymorph do
       WHERE `story_arcs`.`battle_id` = #{battle.id}
     EOS
 
-    expect(battle.heros.joins(:story_arcs).to_sql).to match_sql <<-EOS
-      SELECT `heros`.* FROM `heros`
-      INNER JOIN `story_arcs` `story_arcs_heros`
-      ON `story_arcs_heros`.`hero_id` = `heros`.`id`
-      AND `story_arcs_heros`.`villain_id` IS NULL
-      INNER JOIN `story_arcs`
-      ON `heros`.`id` = `story_arcs`.`hero_id`
-      WHERE `story_arcs`.`battle_id` = #{battle.id}
-    EOS
+    if ActiveRecord::VERSION::MAJOR >= 6
+      expect(battle.heros.joins(:story_arcs).to_sql).to match_sql <<-EOS
+        SELECT `heros`.* FROM `heros`
+        INNER JOIN `story_arcs`
+        ON `heros`.`id` = `story_arcs`.`hero_id`
+        INNER JOIN `story_arcs` `story_arcs_heros`
+        ON `story_arcs_heros`.`villain_id` IS NULL
+        AND `story_arcs_heros`.`hero_id` = `heros`.`id`
+        WHERE `story_arcs`.`battle_id` = #{battle.id}
+      EOS
+    else
+      expect(battle.heros.joins(:story_arcs).to_sql).to match_sql <<-EOS
+        SELECT `heros`.* FROM `heros`
+        INNER JOIN `story_arcs` `story_arcs_heros`
+        ON `story_arcs_heros`.`hero_id` = `heros`.`id`
+        AND `story_arcs_heros`.`villain_id` IS NULL
+        INNER JOIN `story_arcs`
+        ON `heros`.`id` = `story_arcs`.`hero_id`
+        WHERE `story_arcs`.`battle_id` = #{battle.id}
+      EOS
+    end
   end
 end
