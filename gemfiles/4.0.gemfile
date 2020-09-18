@@ -6,5 +6,6 @@ gem "appraisal"
 gem "activerecord", "~> 4.0.5"
 gem "foreigner", "~> 1.7.4"
 gem "mysql2", "~> 0.3.0"
+gem "rake", "< 12.3.0"
 
 gemspec path: "../"
