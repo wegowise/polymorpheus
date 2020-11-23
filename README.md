@@ -142,8 +142,6 @@ Now let's review what we've done.
 
 * Currently the gem only supports MySQL. Please feel free to fork and submit a
   (well-tested) pull request if you want to add Postgres support.
-* This gem is tested and has been tested for Rails 2.3.8, 3.0.x, 3.1.x, 3.2.x,
-  and 4.0.0
 * For Rails 3.1+, you'll still need to use `up` and `down` methods in your
   migrations.
 
