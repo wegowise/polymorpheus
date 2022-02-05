@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gemfile: ['5.2', '6.0']
+        gemfile: ['5.2', '6.0', '6.1']
         ruby-version: ['2.6', '2.7', '3.0']
         exclude:
           - gemfile: '5.2'

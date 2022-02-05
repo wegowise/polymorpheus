@@ -15,7 +15,11 @@ module Polymorpheus
       end
 
       def configured_adapter
-        ActiveRecord::Base.connection_pool.spec.config[:adapter]
+        if ActiveRecord::Base.respond_to?(:connection_db_config)
+          ActiveRecord::Base.connection_db_config.adapter # ActiveRecord >= 6.1
+        else
+          ActiveRecord::Base.connection_pool.spec.config[:adapter]
+        end
       end
     end
 
