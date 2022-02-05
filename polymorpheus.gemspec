@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   s.summary     = "Provides a database-friendly method for polymorphic relationships"
   s.description = "Provides a database-friendly method for polymorphic relationships"
 
+  s.required_ruby_version = ">= 2.6"
   s.required_rubygems_version = ">= 1.3.6"
   s.files = Dir.glob(%w[{lib,spec}/**/*.rb [A-Z]*.{txt,rdoc,md} *.gemspec]) + %w{Rakefile}
   s.extra_rdoc_files = ["README.md", "LICENSE.txt"]
