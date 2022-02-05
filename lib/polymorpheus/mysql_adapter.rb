@@ -74,7 +74,7 @@ module Polymorpheus
             :name => "#{table}_#{col_name}_fk",
             :primary_key => (ref_col || 'id' )
           }.merge(generate_constraints(options))
-          add_foreign_key(table, ref_table, fk_options)
+          add_foreign_key(table, ref_table, **fk_options)
         end
       end
 

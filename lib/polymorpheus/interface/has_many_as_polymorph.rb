@@ -25,7 +25,7 @@ module Polymorpheus
           relation
         end
 
-        has_many association, conditions, options
+        has_many association, conditions, **options
       end
     end
   end

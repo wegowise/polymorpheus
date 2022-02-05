@@ -2,7 +2,7 @@ module SchemaHelpers
   def create_table(name, options = {})
     options.merge!(force: true)
     ActiveRecord::Schema.define do
-      create_table(name, options) do |t|
+      create_table(name, **options) do |t|
         yield(t) if block_given?
       end
     end
