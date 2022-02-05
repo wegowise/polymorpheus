@@ -26,13 +26,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gemfile: ['5.2', '6.0', '6.1']
+        gemfile: ['5.2', '6.0', '6.1', '7.0']
         ruby-version: ['2.6', '2.7', '3.0']
         exclude:
           - gemfile: '5.2'
             ruby-version: '2.7'
           - gemfile: '5.2'
             ruby-version: '3.0'
+          - gemfile: '7.0'
+            ruby-version: '2.6'
 
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
