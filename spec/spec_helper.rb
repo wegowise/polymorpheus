@@ -4,11 +4,14 @@ require 'stringio'
 
 require 'support/active_record/connection_adapters/abstract_mysql_adapter'
 
-ActiveRecord::Base.establish_connection({
+ActiveRecord::Base.establish_connection(
   adapter: 'mysql2',
-  username: 'travis',
-  database: 'polymorpheus_test'
-})
+  database: ENV.fetch('DB_NAME', 'polymorpheus_test'),
+  host: ENV.fetch('DB_HOST', '127.0.0.1'),
+  password: ENV.fetch('DB_PASSWORD', ''),
+  port: ENV.fetch('DB_PORT', '3306'),
+  username: ENV.fetch('DB_USERNAME', 'root')
+)
 
 Dir[File.dirname(__FILE__) + '/support/*.rb'].sort.each { |path| require path }
 

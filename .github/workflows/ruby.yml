@@ -1,0 +1,59 @@
+name: Ruby
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: polymorpheus_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    strategy:
+      fail-fast: false
+      matrix:
+        gemfile: ['5.2', '6.0']
+        ruby-version: ['2.6', '2.7', '3.0']
+        exclude:
+          - gemfile: '5.2'
+            ruby-version: '2.7'
+          - gemfile: '5.2'
+            ruby-version: '3.0'
+
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Setup test database
+      run: mysql --host 127.0.0.1 --port 3306 --user root -e 'CREATE DATABASE IF NOT EXISTS polymorpheus_test;'
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby-version }}
+        bundler-cache: true
+
+    - name: Run tests
+      env:
+        DB_PORT: 3306
+        DB_USER: root
+        DB_PASSWORD: ""
+        DB_NAME: polymorpheus_test
+      run: bundle exec rspec spec
