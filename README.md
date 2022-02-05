@@ -9,15 +9,6 @@ no setup**
 If you are using Bundler, you can add the gem to your Gemfile:
 
 ```ruby
-# with Rails >= 4.2
-gem 'polymorpheus'
-```
-
-Or:
-
-```ruby
-# with Rails < 4.2
-gem 'foreigner'
 gem 'polymorpheus'
 ```
 
@@ -211,8 +202,8 @@ pic.polymorpheus.query_condition
 ## Credits and License
 
 * This gem was written by [Barun Singh](https://github.com/barunio)
-* It uses the [Foreigner gem](https://github.com/matthuhiggins/foreigner) under
-  the hood for Rails < 4.2.
+* Older, unsupported versions of this gem use [Foreigner gem](https://github.com/matthuhiggins/foreigner)
+  under the hood for Rails < 4.2.
 
 polymorpheus is Copyright © 2011-2015 Barun Singh and [WegoWise](
 http://wegowise.com). It is free software, and may be redistributed under the

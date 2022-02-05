@@ -2,8 +2,6 @@ require 'active_record'
 require 'polymorpheus'
 require 'stringio'
 
-require 'support/active_record/connection_adapters/abstract_mysql_adapter'
-
 ActiveRecord::Base.establish_connection(
   adapter: 'mysql2',
   database: ENV.fetch('DB_NAME', 'polymorpheus_test'),
@@ -30,7 +28,7 @@ RSpec.configure do |config|
   config.include SqlTestHelpers
 
   config.after do
-    data_sources.each do |table|
+    ActiveRecord::Base.connection.tables.each do |table|
       ActiveRecord::Base.connection.drop_table(table)
     end
   end

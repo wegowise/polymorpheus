@@ -208,8 +208,3 @@ end
   rescue
   end
 end
-
-if ::Polymorpheus.require_foreigner?
-  require 'foreigner/connection_adapters/mysql2_adapter'
-  require 'polymorpheus/mysql_adapter/foreigner_constraints'
-end

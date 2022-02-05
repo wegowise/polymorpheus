@@ -8,12 +8,7 @@ module Polymorpheus
   module Interface
     autoload :BelongsToPolymorphic, 'polymorpheus/interface/belongs_to_polymorphic'
     autoload :ValidatesPolymorph, 'polymorpheus/interface/validates_polymorph'
-
-    if ActiveRecord::VERSION::MAJOR >= 4
-      autoload :HasManyAsPolymorph, 'polymorpheus/interface/rails4/has_many_as_polymorph'
-    else
-      autoload :HasManyAsPolymorph, 'polymorpheus/interface/rails3/has_many_as_polymorph'
-    end
+    autoload :HasManyAsPolymorph, 'polymorpheus/interface/has_many_as_polymorph'
   end
 
   class InterfaceBuilder
@@ -23,15 +18,7 @@ module Polymorpheus
   module ConnectionAdapters
     autoload :SchemaStatements, 'polymorpheus/schema_statements'
   end
-
-  def self.require_foreigner?
-    ActiveRecord::VERSION::MAJOR < 5 &&
-    !(::ActiveRecord::VERSION::MAJOR >= 4 &&
-      ::ActiveRecord::VERSION::MINOR >= 2)
-  end
 end
-
-require 'foreigner' if ::Polymorpheus.require_foreigner?
 
 Polymorpheus::Adapter.register 'mysql2', 'polymorpheus/mysql_adapter'
 Polymorpheus::Adapter.register 'postgresql', 'polymorpheus/postgresql_adapter'
